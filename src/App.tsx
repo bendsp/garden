@@ -271,8 +271,8 @@ function RulesModal({ onClose }: { onClose: () => void }) {
               <article>
                 <MiniRuleBoard
                   tiles={[
-                    { position: 'center', type: 'fire', selected: true },
-                    { position: 'east', type: 'fire', matchCandidate: true },
+                    { position: 'center', type: 'water', selected: true },
+                    { position: 'east', type: 'water', matchCandidate: true },
                   ]}
                 />
               </article>
@@ -283,42 +283,30 @@ function RulesModal({ onClose }: { onClose: () => void }) {
 
           <section className="rules-block">
             <h2>Unlocking Marbles</h2>
-            <div className="rules-cards three-up">
+            <div className="rules-cards two-up">
               <article>
                 <MiniRuleBoard
                   tiles={[
-                    { position: 'northWest', type: 'salt' },
-                    { position: 'northEast', type: 'salt' },
-                    { position: 'west', type: 'salt' },
+                    { position: 'northWest', type: 'fire' },
+                    { position: 'northEast', type: 'fire' },
+                    { position: 'west', type: 'fire' },
                     { position: 'center', type: 'water', mark: '×', locked: true },
-                    { position: 'east', type: 'salt' },
-                    { position: 'southWest', type: 'salt' },
-                    { position: 'southEast', type: 'salt' },
+                    { position: 'east', type: 'fire' },
+                    { position: 'southWest', type: 'fire' },
+                    { position: 'southEast', type: 'fire' },
                   ]}
                 />
               </article>
               <article>
                 <MiniRuleBoard
                   tiles={[
-                    { position: 'northWest', type: 'salt' },
+                    { position: 'northWest', type: 'fire' },
                     { position: 'northEast', mark: '1' },
-                    { position: 'west', type: 'salt' },
+                    { position: 'west', type: 'fire' },
                     { position: 'center', type: 'water' },
                     { position: 'east', mark: '2' },
-                    { position: 'southWest', type: 'salt' },
+                    { position: 'southWest', type: 'fire' },
                     { position: 'southEast', mark: '3' },
-                  ]}
-                />
-              </article>
-              <article>
-                <MiniRuleBoard
-                  tiles={[
-                    { position: 'northWest', mark: '1', offBoard: true },
-                    { position: 'northEast', type: 'salt' },
-                    { position: 'west', mark: '2', offBoard: true },
-                    { position: 'center', type: 'water' },
-                    { position: 'east', type: 'salt' },
-                    { position: 'southWest', mark: '3', offBoard: true },
                   ]}
                 />
               </article>
