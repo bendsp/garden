@@ -24,10 +24,17 @@
 }
 
 .topbar {
+  min-height: 42px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  width: 100%;
+}
+
+.topbar > div {
+  display: flex;
+  align-items: center;
 }
 
 .topbar h1 {
@@ -39,6 +46,7 @@
 
 .actions {
   display: flex;
+  align-items: center;
   gap: 8px;
 }
 
@@ -753,10 +761,6 @@ button:disabled {
   .app {
     padding: 4px;
     gap: 8px;
-  }
-
-  .topbar {
-    align-items: flex-start;
   }
 
   .topbar h1 {
