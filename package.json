@@ -1,5 +1,5 @@
 {
-  "name": "sigmars-garden-web",
+  "name": "garden",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -8,8 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "test": "vitest run",
-    "preview": "vite preview",
-    "use:opus-data": "mkdir -p public/boards && cp \"$HOME/Library/Application Support/Steam/steamapps/common/Opus Magnum/Opus Magnum.app/Contents/Resources/Content/solitaire.dat\" public/boards/solitaire.dat"
+    "generate:levels": "node scripts/generate-levels.mjs",
+    "preview": "vite preview"
   },
   "dependencies": {
     "react": "^19.2.6",

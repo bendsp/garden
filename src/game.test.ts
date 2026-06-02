@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import {
   CELL_BY_KEY,
@@ -10,7 +11,7 @@ import {
   generateBoard,
   isFree,
   isPairMatch,
-  parseSolitaireDat,
+  parseLevelsDat,
   validateGeneratedBoard,
 } from './game'
 
@@ -84,15 +85,16 @@ describe('garden rules', () => {
     expect(canSelect(board, tin, 1)).toBe(true)
   })
 
-  it('parses the optional local solitaire.dat board format without bundling data', () => {
+  it('parses the project levels.dat format with gold at the center', () => {
     const buffer = new ArrayBuffer(4 + 55 * 3)
     const view = new DataView(buffer)
     view.setUint32(0, 1, true)
 
-    const records: Array<[number, number, number]> = []
+    const records: Array<[number, number, number]> = [[7, 5, 0]]
+    const openCells = CELLS.filter((cell) => cell.key !== cellKey(0, 0))
     const push = (type: number, count: number) => {
       for (let i = 0; i < count; i += 1) {
-        const cell = CELLS[records.length]
+        const cell = openCells[records.length - 1]
         records.push([type, cell.q + 5, cell.r])
       }
     }
@@ -102,7 +104,6 @@ describe('garden rules', () => {
     push(4, 8)
     push(5, 8)
     push(6, 5)
-    push(7, 1)
     push(8, 1)
     push(9, 1)
     push(10, 1)
@@ -118,7 +119,17 @@ describe('garden rules', () => {
       view.setInt8(offset + 2, y)
     })
 
-    const game = parseSolitaireDat(buffer, 1)
+    const game = parseLevelsDat(buffer, 1)
     expect(Object.values(game.board)).toHaveLength(55)
+    expect(game.board[cellKey(0, 0)].type).toBe('gold')
+  })
+
+  it('loads the committed first-party level pack', () => {
+    const buffer = readFileSync('public/boards/levels.dat')
+    const game = parseLevelsDat(buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength), 1)
+
+    expect(game.levelNumber).toBeGreaterThanOrEqual(1)
+    expect(Object.values(game.board)).toHaveLength(55)
+    expect(game.board[cellKey(0, 0)].type).toBe('gold')
   })
 })

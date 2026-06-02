@@ -5,16 +5,16 @@ import {
   MARBLE_LABELS,
   MARBLE_MARKS,
   METAL_ORDER,
+  type GameState,
   type Marble,
   type MarbleType,
   applyRemoval,
   canSelect,
-  generateBoard,
   getUnlockedMetal,
   isPairMatch,
   isSingleMatch,
   legalMoves,
-  parseSolitaireDat,
+  parseLevelsDat,
   restartGame,
   undoGame,
 } from './game'
@@ -73,17 +73,30 @@ function describeSelection(types: MarbleType[], metalIndex: number) {
   return isPairMatch(types[0], types[1], metalIndex) ? 'Match.' : 'Not a match.'
 }
 
+function formatTime(ms: number) {
+  const totalSeconds = Math.max(0, Math.floor(ms / 1000))
+  const minutes = Math.floor(totalSeconds / 60)
+  const seconds = totalSeconds % 60
+  return `${minutes}:${String(seconds).padStart(2, '0')}`
+}
+
 function App() {
-  const [game, setGame] = useState(() => generateBoard())
-  const [source, setSource] = useState<'generated' | 'local-dat'>('generated')
+  const [game, setGame] = useState<GameState | null>(null)
+  const [loadError, setLoadError] = useState('')
+  const [wins, setWins] = useState(() => Number(localStorage.getItem('garden:wins') ?? '0'))
+  const [countedWin, setCountedWin] = useState<string | null>(null)
+  const [now, setNow] = useState(() => Date.now())
   const [rulesOpen, setRulesOpen] = useState(false)
-  const marbles = Object.values(game.board)
-  const selectedMarbles = game.selectedIds
+  const marbles = game ? Object.values(game.board) : []
+  const selectedMarbles = game
+    ? game.selectedIds
     .map((id) => marbles.find((marble) => marble.id === id))
     .filter(Boolean) as Marble[]
+    : []
   const selectedTypes = selectedMarbles.map((marble) => marble.type)
-  const moveCount = legalMoves(game.board, game.metalIndex).length
+  const moveCount = game ? legalMoves(game.board, game.metalIndex).length : 0
   const remaining = marbles.length
+  const elapsedMs = game ? (game.finishedAt ?? now) - game.startedAt : 0
   const counts = TYPE_ORDER.map((type) => ({
     type,
     count: marbles.filter((marble) => marble.type === type).length,
@@ -92,39 +105,38 @@ function App() {
   async function newGame() {
     const seed = Math.floor(Math.random() * 2 ** 32)
     try {
-      const response = await fetch('/boards/solitaire.dat', { cache: 'no-store' })
+      const response = await fetch('/boards/levels.dat', { cache: 'no-store' })
       if (!response.ok) {
-        throw new Error('No local board data.')
+        throw new Error('Could not load level data.')
       }
       const buffer = await response.arrayBuffer()
-      setGame(parseSolitaireDat(buffer, seed))
-      setSource('local-dat')
-    } catch {
-      setGame(generateBoard(seed))
-      setSource('generated')
+      setGame(parseLevelsDat(buffer, seed))
+      setCountedWin(null)
+      setLoadError('')
+    } catch (error) {
+      setLoadError(error instanceof Error ? error.message : 'Could not load level data.')
     }
   }
 
   useEffect(() => {
     let cancelled = false
     const seed = Math.floor(Math.random() * 2 ** 32)
-    fetch('/boards/solitaire.dat', { cache: 'no-store' })
+    fetch('/boards/levels.dat', { cache: 'no-store' })
       .then((response) => {
         if (!response.ok) {
-          throw new Error('No local board data.')
+          throw new Error('Could not load level data.')
         }
         return response.arrayBuffer()
       })
       .then((buffer) => {
         if (!cancelled) {
-          setGame(parseSolitaireDat(buffer, seed))
-          setSource('local-dat')
+          setGame(parseLevelsDat(buffer, seed))
+          setLoadError('')
         }
       })
-      .catch(() => {
+      .catch((error) => {
         if (!cancelled) {
-          setGame(generateBoard(seed))
-          setSource('generated')
+          setLoadError(error instanceof Error ? error.message : 'Could not load level data.')
         }
       })
 
@@ -133,53 +145,120 @@ function App() {
     }
   }, [])
 
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 1000)
+    return () => window.clearInterval(timer)
+  }, [])
+
+  function recordWin(nextGame: GameState) {
+    if (!nextGame.finishedAt) {
+      return
+    }
+
+    const winKey = `${nextGame.seed}:${nextGame.finishedAt}`
+    if (countedWin === winKey) {
+      return
+    }
+
+    setCountedWin(winKey)
+    setWins((current) => {
+      const next = current + 1
+      localStorage.setItem('garden:wins', String(next))
+      return next
+    })
+  }
+
+  function removeMarbles(ids: string[]) {
+    if (!game) {
+      return
+    }
+
+    const nextGame = applyRemoval(game, ids)
+    recordWin(nextGame)
+    setGame(nextGame)
+  }
+
   function selectMarble(marble: Marble) {
+    if (!game || game.finishedAt) {
+      return
+    }
+
     if (!canSelect(game.board, marble, game.metalIndex)) {
-      setGame((current) => ({
-        ...current,
-        selectedIds: [],
-        message:
-          marble.type === getUnlockedMetal(current.metalIndex) || marble.type === 'quicksilver'
-            ? 'That marble is still blocked.'
-            : `${MARBLE_LABELS[marble.type]} is locked for now.`,
-      }))
+      setGame((current) =>
+        current
+          ? {
+              ...current,
+              selectedIds: [],
+              message:
+                marble.type === getUnlockedMetal(current.metalIndex) || marble.type === 'quicksilver'
+                  ? 'That marble is still blocked.'
+                  : `${MARBLE_LABELS[marble.type]} is locked for now.`,
+            }
+          : current,
+      )
       return
     }
 
     if (game.selectedIds.includes(marble.id)) {
       if (isSingleMatch(marble.type, game.metalIndex)) {
-        setGame((current) => applyRemoval(current, [marble.id]))
+        removeMarbles([marble.id])
         return
       }
 
-      setGame((current) => ({
-        ...current,
-        selectedIds: current.selectedIds.filter((id) => id !== marble.id),
-        message: 'Selection cleared.',
-      }))
+      setGame((current) =>
+        current
+          ? {
+              ...current,
+              selectedIds: current.selectedIds.filter((id) => id !== marble.id),
+              message: 'Selection cleared.',
+            }
+          : current,
+      )
       return
     }
 
     if (selectedMarbles.length === 0) {
-      setGame((current) => ({
-        ...current,
-        selectedIds: [marble.id],
-        message: describeSelection([marble.type], current.metalIndex),
-      }))
+      setGame((current) =>
+        current
+          ? {
+              ...current,
+              selectedIds: [marble.id],
+              message: describeSelection([marble.type], current.metalIndex),
+            }
+          : current,
+      )
       return
     }
 
     const first = selectedMarbles[0]
     if (isPairMatch(first.type, marble.type, game.metalIndex)) {
-      setGame((current) => applyRemoval(current, [first.id, marble.id]))
+      removeMarbles([first.id, marble.id])
       return
     }
 
-    setGame((current) => ({
-      ...current,
-      selectedIds: [marble.id],
-      message: describeSelection([marble.type], current.metalIndex),
-    }))
+    setGame((current) =>
+      current
+        ? {
+            ...current,
+            selectedIds: [marble.id],
+            message: describeSelection([marble.type], current.metalIndex),
+          }
+        : current,
+    )
+  }
+
+  if (!game) {
+    return (
+      <main className="app app-loading">
+        <h1>Garden</h1>
+        <p>{loadError || 'Loading levels.'}</p>
+        {loadError && (
+          <button type="button" onClick={() => void newGame()}>
+            Retry
+          </button>
+        )}
+      </main>
+    )
   }
 
   return (
@@ -190,10 +269,14 @@ function App() {
           <p>{remaining === 0 ? 'Board cleared.' : game.message}</p>
         </div>
         <div className="actions" aria-label="Game controls">
-          <button type="button" onClick={() => setGame((current) => undoGame(current))} disabled={!game.history.length}>
+          <button
+            type="button"
+            onClick={() => setGame((current) => (current ? undoGame(current) : current))}
+            disabled={!game.history.length}
+          >
             Undo
           </button>
-          <button type="button" onClick={() => setGame((current) => restartGame(current))}>
+          <button type="button" onClick={() => setGame((current) => (current ? restartGame(current) : current))}>
             Restart
           </button>
           <button type="button" onClick={() => void newGame()}>
@@ -278,9 +361,21 @@ function App() {
         <button type="button" className="link-button" onClick={() => setRulesOpen((open) => !open)}>
           {rulesOpen ? 'Hide rules' : 'Rules'}
         </button>
-        <span>{source === 'local-dat' ? 'local .dat' : 'generated'} seed {game.seed}</span>
+        <span>Level {game.levelNumber ?? 'custom'} · {formatTime(elapsedMs)}</span>
         <span>{describeSelection(selectedTypes, game.metalIndex)}</span>
       </section>
+
+      {game.finishedAt && (
+        <section className="result" aria-label="Win result">
+          <div>
+            <h2>Cleared</h2>
+            <p>{formatTime(game.finishedAt - game.startedAt)} · {wins} wins</p>
+          </div>
+          <button type="button" onClick={() => void newGame()}>
+            New game
+          </button>
+        </section>
+      )}
 
       {rulesOpen && (
         <aside className="rules-panel" aria-label="Rules summary">

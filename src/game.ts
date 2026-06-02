@@ -24,6 +24,7 @@ export type MoveSpec = {
 
 export type GameState = {
   seed: number
+  levelNumber?: number
   board: Board
   initialBoard: Board
   solution: MoveSpec[]
@@ -31,6 +32,8 @@ export type GameState = {
   history: Board[]
   metalIndex: number
   message: string
+  startedAt: number
+  finishedAt?: number
 }
 
 const RADIUS = 5
@@ -71,14 +74,14 @@ export const MARBLE_LABELS: Record<MarbleType, string> = {
 }
 
 export const MARBLE_MARKS: Record<MarbleType, string> = {
-  air: 'A',
-  fire: 'F',
-  water: 'W',
-  earth: 'E',
-  salt: 'S',
+  air: '△',
+  fire: '▲',
+  water: '▽',
+  earth: '▼',
+  salt: '○',
   vitae: '+',
-  mors: '-',
-  quicksilver: 'Q',
+  mors: '−',
+  quicksilver: '*',
   lead: '1',
   tin: '2',
   iron: '3',
@@ -296,6 +299,7 @@ export function applyRemoval(state: GameState, ids: string[]): GameState {
       : movesLeft === 0
         ? 'No legal moves.'
         : `${remaining} marbles remain.`
+  const finishedAt = remaining === 0 ? Date.now() : undefined
 
   return {
     ...state,
@@ -304,6 +308,7 @@ export function applyRemoval(state: GameState, ids: string[]): GameState {
     metalIndex,
     history: [...state.history, state.board],
     message,
+    finishedAt,
   }
 }
 
@@ -402,6 +407,7 @@ export function generateBoard(seed = Math.floor(Math.random() * 2 ** 32)): GameS
         history: [],
         metalIndex: 0,
         message: 'Select a free marble.',
+        startedAt: Date.now(),
       }
     }
   }
@@ -416,12 +422,12 @@ const DAT_TYPE_MAP: Record<number, MarbleType> = {
   4: 'water',
   5: 'earth',
   6: 'quicksilver',
-  7: 'lead',
-  8: 'tin',
-  9: 'iron',
-  10: 'copper',
-  11: 'silver',
-  12: 'gold',
+  7: 'gold',
+  8: 'silver',
+  9: 'copper',
+  10: 'iron',
+  11: 'tin',
+  12: 'lead',
   13: 'vitae',
   14: 'mors',
 }
@@ -435,12 +441,12 @@ function rotate(q: number, r: number, turns: number) {
   return { q: nextQ, r: nextR }
 }
 
-export function parseSolitaireDat(buffer: ArrayBuffer, seed = Math.floor(Math.random() * 2 ** 32)): GameState {
+export function parseLevelsDat(buffer: ArrayBuffer, seed = Math.floor(Math.random() * 2 ** 32)): GameState {
   const view = new DataView(buffer)
   const boardCount = view.getUint32(0, true)
   const boardSize = 55 * 3
   if (buffer.byteLength !== 4 + boardCount * boardSize) {
-    throw new Error('Invalid solitaire.dat size.')
+    throw new Error('Invalid levels.dat size.')
   }
 
   const random = mulberry32(seed)
@@ -456,7 +462,7 @@ export function parseSolitaireDat(buffer: ArrayBuffer, seed = Math.floor(Math.ra
     const rotated = rotate(sourceQ, sourceR, turns)
     const cell = CELL_BY_KEY.get(cellKey(rotated.q, rotated.r))
     if (!type || !cell) {
-      throw new Error('Invalid solitaire.dat board record.')
+      throw new Error('Invalid levels.dat board record.')
     }
     board[cell.key] = {
       id: `d${boardIndex}-${i}`,
@@ -470,19 +476,21 @@ export function parseSolitaireDat(buffer: ArrayBuffer, seed = Math.floor(Math.ra
     ([type, count]) => counts[type as MarbleType] === count,
   )
   if (!countsOk || Object.keys(board).length !== 55) {
-    throw new Error('Invalid solitaire.dat marble counts.')
+    throw new Error('Invalid levels.dat marble counts.')
   }
 
   const initialBoard = cloneBoard(board)
   return {
     seed,
+    levelNumber: boardIndex + 1,
     board,
     initialBoard,
     solution: [],
     selectedIds: [],
     history: [],
     metalIndex: 0,
-    message: `Official-style board ${boardIndex + 1}.`,
+    message: `Level ${boardIndex + 1}.`,
+    startedAt: Date.now(),
   }
 }
 
@@ -539,6 +547,8 @@ export function restartGame(state: GameState): GameState {
     history: [],
     metalIndex: 0,
     message: 'Restarted.',
+    startedAt: Date.now(),
+    finishedAt: undefined,
   }
 }
 
@@ -567,5 +577,6 @@ export function undoGame(state: GameState): GameState {
     history: state.history.slice(0, -1),
     metalIndex,
     message: 'Undone.',
+    finishedAt: undefined,
   }
 }

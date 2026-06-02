@@ -6,6 +6,7 @@
   --line: #e5e2dc;
   --hole: #f0eee8;
   --hole-stroke: #d8d2c7;
+  --purple: #7651d1;
   --shadow: 0 14px 40px rgba(20, 20, 20, 0.08);
 }
 
@@ -142,13 +143,13 @@ button:disabled {
 .marble text {
   pointer-events: none;
   fill: rgba(255, 255, 255, 0.94);
-  font-size: 22px;
-  font-weight: 800;
+  font-size: 25px;
+  font-weight: 850;
   font-family: var(--font-main);
 }
 
 .marble.is-locked {
-  opacity: 0.37;
+  opacity: 0.66;
 }
 
 .marble.is-free polygon {
@@ -158,6 +159,16 @@ button:disabled {
 .marble.is-selected polygon {
   stroke: #111;
   stroke-width: 4;
+}
+
+.marble-quicksilver text,
+.marble-lead text,
+.marble-tin text,
+.marble-iron text,
+.marble-copper text,
+.marble-silver text,
+.marble-gold text {
+  fill: #ffffff;
 }
 
 .marble-salt polygon,
@@ -204,44 +215,44 @@ button:disabled {
 
 .marble-quicksilver polygon,
 .token.marble-quicksilver {
-  fill: #928c80;
-  background: #928c80;
+  fill: var(--purple);
+  background: var(--purple);
 }
 
 .marble-lead polygon,
 .token.marble-lead {
-  fill: #595959;
-  background: #595959;
+  fill: var(--purple);
+  background: var(--purple);
 }
 
 .marble-tin polygon,
 .token.marble-tin {
-  fill: #777f86;
-  background: #777f86;
+  fill: var(--purple);
+  background: var(--purple);
 }
 
 .marble-iron polygon,
 .token.marble-iron {
-  fill: #5c514b;
-  background: #5c514b;
+  fill: var(--purple);
+  background: var(--purple);
 }
 
 .marble-copper polygon,
 .token.marble-copper {
-  fill: #b76545;
-  background: #b76545;
+  fill: var(--purple);
+  background: var(--purple);
 }
 
 .marble-silver polygon,
 .token.marble-silver {
-  fill: #9aa8ae;
-  background: #9aa8ae;
+  fill: var(--purple);
+  background: var(--purple);
 }
 
 .marble-gold polygon,
 .token.marble-gold {
-  fill: #c58a1e;
-  background: #c58a1e;
+  fill: var(--purple);
+  background: var(--purple);
 }
 
 .tray {
@@ -295,6 +306,41 @@ button:disabled {
 
 .rules-panel p + p {
   margin-top: 10px;
+}
+
+.app-loading {
+  justify-content: center;
+}
+
+.result {
+  position: fixed;
+  inset: auto 18px 18px;
+  z-index: 10;
+  width: min(420px, calc(100vw - 36px));
+  margin: 0 auto;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 20px 60px rgba(20, 20, 20, 0.16);
+  backdrop-filter: blur(10px);
+}
+
+.result h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.result p {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 14px;
 }
 
 @media (max-width: 680px) {
