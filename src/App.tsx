@@ -4,7 +4,6 @@ import {
   CELLS,
   MARBLE_LABELS,
   MARBLE_MARKS,
-  METAL_ORDER,
   type GameState,
   type Marble,
   type MarbleType,
@@ -295,7 +294,7 @@ function App() {
           <small>moves</small>
         </div>
         <div>
-          <span>{game.metalIndex >= 5 ? '6' : METAL_ORDER.indexOf(getUnlockedMetal(game.metalIndex)) + 1}</span>
+          <span>{MARBLE_MARKS[getUnlockedMetal(game.metalIndex)]}</span>
           <small>{game.metalIndex >= 5 ? 'gold' : getUnlockedMetal(game.metalIndex)}</small>
         </div>
       </section>
@@ -319,6 +318,7 @@ function App() {
               const point = toPoint(marble.cell.q, marble.cell.r)
               const free = canSelect(game.board, marble, game.metalIndex)
               const selected = game.selectedIds.includes(marble.id)
+              const mark = MARBLE_MARKS[marble.type]
               return (
                 <g
                   key={marble.id}
@@ -338,9 +338,11 @@ function App() {
                   }}
                 >
                   <polygon points={hexPoints(HEX_SIZE - 5)} />
-                  <text aria-hidden="true" textAnchor="middle" dominantBaseline="central">
-                    {MARBLE_MARKS[marble.type]}
-                  </text>
+                  {mark && (
+                    <text aria-hidden="true" textAnchor="middle" dominantBaseline="central">
+                      {mark}
+                    </text>
+                  )}
                 </g>
               )
             })}
@@ -351,7 +353,7 @@ function App() {
       <section className="tray" aria-label="Remaining marbles">
         {counts.map(({ type, count }) => (
           <div key={type} className={`token marble-${type}`} title={MARBLE_LABELS[type]}>
-            <span>{MARBLE_MARKS[type]}</span>
+            {MARBLE_MARKS[type] && <span>{MARBLE_MARKS[type]}</span>}
             <strong>{count}</strong>
           </div>
         ))}

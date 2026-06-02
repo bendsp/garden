@@ -6,6 +6,7 @@ import {
   type Board,
   type MarbleType,
   STARTING_COUNTS,
+  MARBLE_MARKS,
   applyRemoval,
   canSelect,
   cellKey,
@@ -76,6 +77,17 @@ describe('garden rules', () => {
     expect(isPairMatch('lead', 'quicksilver', 0)).toBe(true)
     expect(isPairMatch('tin', 'quicksilver', 0)).toBe(false)
     expect(isPairMatch('tin', 'quicksilver', 1)).toBe(true)
+  })
+
+  it('uses color-only elements and countdown metal labels', () => {
+    expect(MARBLE_MARKS.air).toBe('')
+    expect(MARBLE_MARKS.fire).toBe('')
+    expect(MARBLE_MARKS.water).toBe('')
+    expect(MARBLE_MARKS.earth).toBe('')
+    expect(MARBLE_MARKS.salt).toBe('')
+    expect(MARBLE_MARKS.quicksilver).toBe('*')
+    expect(MARBLE_MARKS.lead).toBe('6')
+    expect(MARBLE_MARKS.gold).toBe('0')
   })
 
   it('keeps locked metals unselectable even when physically free', () => {

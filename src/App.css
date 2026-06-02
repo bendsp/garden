@@ -149,7 +149,8 @@ button:disabled {
 }
 
 .marble.is-locked {
-  opacity: 0.66;
+  opacity: 0.22;
+  filter: grayscale(0.35);
 }
 
 .marble.is-free polygon {
