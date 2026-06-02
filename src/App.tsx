@@ -351,9 +351,7 @@ function RulesModal({ onClose }: { onClose: () => void }) {
               <div className="combo-row">
                 <MatchPair types={['vitae', 'mors']} />
               </div>
-              <p>
-                <strong>+</strong> and <strong>−</strong> only match with each other.
-              </p>
+              <p>+ and − only match with each other.</p>
             </article>
 
             <article>
@@ -370,9 +368,7 @@ function RulesModal({ onClose }: { onClose: () => void }) {
                 ))}
                 <RuleHex type="gold" />
               </div>
-              <p>
-                The purple numbers match with ● in descending order. <strong>0</strong> clears alone.
-              </p>
+              <p>The purple numbers match with ● in descending order. 0 clears alone.</p>
             </article>
           </div>
         </section>
