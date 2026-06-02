@@ -13,7 +13,6 @@ import {
   getUnlockedMetal,
   isPairMatch,
   isSingleMatch,
-  legalMoves,
   parseLevelsDat,
   restartGame,
   undoGame,
@@ -92,8 +91,6 @@ function App() {
     .map((id) => marbles.find((marble) => marble.id === id))
     .filter(Boolean) as Marble[]
     : []
-  const moveCount = game ? legalMoves(game.board, game.metalIndex).length : 0
-  const remaining = marbles.length
   const counts = TYPE_ORDER.map((type) => ({
     type,
     count: marbles.filter((marble) => marble.type === type).length,
@@ -282,21 +279,6 @@ function App() {
           </button>
         </div>
       </header>
-
-      <section className="status" aria-label="Game status">
-        <div>
-          <span>{remaining}</span>
-          <small>left</small>
-        </div>
-        <div>
-          <span>{moveCount}</span>
-          <small>moves</small>
-        </div>
-        <div>
-          <span>{MARBLE_MARKS[getUnlockedMetal(game.metalIndex)]}</span>
-          <small>{game.metalIndex >= 5 ? 'gold' : getUnlockedMetal(game.metalIndex)}</small>
-        </div>
-      </section>
 
       <section className="board-wrap" aria-label="Puzzle board">
         <svg className="board" viewBox={`0 0 ${BOARD_WIDTH} ${BOARD_HEIGHT}`} role="img" aria-label="Hexagonal puzzle board">

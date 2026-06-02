@@ -73,38 +73,6 @@ button:disabled {
   cursor: default;
 }
 
-.status {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--surface);
-  overflow: hidden;
-}
-
-.status div {
-  padding: 10px 12px;
-  border-right: 1px solid var(--line);
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 8px;
-}
-
-.status div:last-child {
-  border-right: 0;
-}
-
-.status span {
-  font-size: 21px;
-  font-weight: 650;
-}
-
-.status small {
-  color: var(--muted);
-  text-transform: capitalize;
-}
-
 .board-wrap {
   background: var(--surface);
   border: 1px solid var(--line);
@@ -122,7 +90,6 @@ button:disabled {
   display: block;
   width: 100%;
   height: auto;
-  max-height: min(72svh, 760px);
   user-select: none;
   -webkit-user-select: none;
 }
@@ -382,16 +349,12 @@ button:disabled {
     font-size: 13px;
   }
 
-  .status div {
-    padding: 8px 6px;
-  }
-
-  .status span {
-    font-size: 18px;
-  }
-
-  .status small {
-    font-size: 11px;
+  .board-wrap {
+    margin-inline: -10px;
+    border-inline: 0;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
   }
 
   .tray {
