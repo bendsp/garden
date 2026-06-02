@@ -1,0 +1,124 @@
+import { describe, expect, it } from 'vitest'
+import {
+  CELL_BY_KEY,
+  CELLS,
+  type Board,
+  type MarbleType,
+  STARTING_COUNTS,
+  canSelect,
+  cellKey,
+  generateBoard,
+  isFree,
+  isPairMatch,
+  parseSolitaireDat,
+  validateGeneratedBoard,
+} from './game'
+
+function makeMarble(type: MarbleType, q: number, r: number) {
+  const cell = CELL_BY_KEY.get(cellKey(q, r))
+  if (!cell) {
+    throw new Error('Invalid test cell.')
+  }
+  return { id: `${type}-${q}-${r}`, type, cell }
+}
+
+describe('garden rules', () => {
+  it('uses a radius-5 hex board with 91 cells', () => {
+    expect(CELLS).toHaveLength(91)
+  })
+
+  it('generates a 55-marble board with the canonical starting counts', () => {
+    const game = generateBoard(1234)
+    const counts = Object.values(game.board).reduce(
+      (acc, marble) => {
+        acc[marble.type] += 1
+        return acc
+      },
+      Object.fromEntries(Object.keys(STARTING_COUNTS).map((type) => [type, 0])) as Record<MarbleType, number>,
+    )
+
+    expect(Object.values(game.board)).toHaveLength(55)
+    expect(counts).toEqual(STARTING_COUNTS)
+  })
+
+  it('generates a board with a replayable clearing solution', () => {
+    const game = generateBoard(98765)
+    expect(validateGeneratedBoard(game.board, game.solution)).toBe(true)
+  })
+
+  it('requires three contiguous empty neighbor spaces for a marble to be free', () => {
+    const center = makeMarble('air', 0, 0)
+    const blockerCells = [
+      [1, 0],
+      [0, -1],
+      [-1, 0],
+    ] as const
+    const blockedBoard: Board = { [center.cell.key]: center }
+    blockerCells.forEach(([q, r], index) => {
+      const blocker = makeMarble('salt', q, r)
+      blockedBoard[blocker.cell.key] = { ...blocker, id: `b-${index}` }
+    })
+
+    expect(isFree(blockedBoard, center)).toBe(false)
+
+    const openBoard = { ...blockedBoard }
+    delete openBoard[cellKey(1, 0)]
+    expect(isFree(openBoard, center)).toBe(true)
+  })
+
+  it('enforces matching pairs and metal unlock order', () => {
+    expect(isPairMatch('air', 'air', 0)).toBe(true)
+    expect(isPairMatch('air', 'fire', 0)).toBe(false)
+    expect(isPairMatch('salt', 'earth', 0)).toBe(true)
+    expect(isPairMatch('vitae', 'mors', 0)).toBe(true)
+    expect(isPairMatch('lead', 'quicksilver', 0)).toBe(true)
+    expect(isPairMatch('tin', 'quicksilver', 0)).toBe(false)
+    expect(isPairMatch('tin', 'quicksilver', 1)).toBe(true)
+  })
+
+  it('keeps locked metals unselectable even when physically free', () => {
+    const tin = makeMarble('tin', 5, 0)
+    const board: Board = { [tin.cell.key]: tin }
+
+    expect(canSelect(board, tin, 0)).toBe(false)
+    expect(canSelect(board, tin, 1)).toBe(true)
+  })
+
+  it('parses the optional local solitaire.dat board format without bundling data', () => {
+    const buffer = new ArrayBuffer(4 + 55 * 3)
+    const view = new DataView(buffer)
+    view.setUint32(0, 1, true)
+
+    const records: Array<[number, number, number]> = []
+    const push = (type: number, count: number) => {
+      for (let i = 0; i < count; i += 1) {
+        const cell = CELLS[records.length]
+        records.push([type, cell.q + 5, cell.r])
+      }
+    }
+    push(1, 4)
+    push(2, 8)
+    push(3, 8)
+    push(4, 8)
+    push(5, 8)
+    push(6, 5)
+    push(7, 1)
+    push(8, 1)
+    push(9, 1)
+    push(10, 1)
+    push(11, 1)
+    push(12, 1)
+    push(13, 4)
+    push(14, 4)
+
+    records.forEach(([type, x, y], index) => {
+      const offset = 4 + index * 3
+      view.setUint8(offset, type)
+      view.setInt8(offset + 1, x)
+      view.setInt8(offset + 2, y)
+    })
+
+    const game = parseSolitaireDat(buffer, 1)
+    expect(Object.values(game.board)).toHaveLength(55)
+  })
+})
