@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import './App.css'
+import { playMatchSound, playSelectSound } from './audio'
 import {
   CELLS,
   MARBLE_LABELS,
@@ -192,6 +193,7 @@ function App() {
 
     if (game.selectedIds.includes(marble.id)) {
       if (isSingleMatch(marble.type, game.metalIndex)) {
+        playMatchSound()
         removeMarbles([marble.id])
         return
       }
@@ -209,6 +211,7 @@ function App() {
     }
 
     if (selectedMarbles.length === 0) {
+      playSelectSound()
       setGame((current) =>
         current
           ? {
@@ -223,10 +226,12 @@ function App() {
 
     const first = selectedMarbles[0]
     if (isPairMatch(first.type, marble.type, game.metalIndex)) {
+      playMatchSound()
       removeMarbles([first.id, marble.id])
       return
     }
 
+    playSelectSound()
     setGame((current) =>
       current
         ? {
