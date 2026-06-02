@@ -31,71 +31,71 @@ The six neighbor directions, in circular order, are:
 ]
 ```
 
-## Starting Marble Set
+## Starting Tile Set
 
-Each board starts with 55 marbles and 36 empty cells.
+Each board starts with 55 tiles and 36 empty cells.
 
 Canonical counts:
 
 ```text
-8 Air
-8 Fire
-8 Water
-8 Earth
-4 Salt
-4 Vitae
-4 Mors
-5 Quicksilver
-1 Lead
-1 Tin
-1 Iron
-1 Copper
-1 Silver
-1 Gold
+8 Yellow
+8 Red
+8 Blue
+8 Green
+4 Rainbow
+4 +
+4 −
+5 Dot
+1 Purple 5
+1 Purple 4
+1 Purple 3
+1 Purple 2
+1 Purple 1
+1 Purple 0
 ```
 
-This implementation renders these as flat colored hexagons. Cardinal elements are color-only, salt uses a rainbow gradient to indicate its wildcard role, vitae/mors use `+` and `−`, and quicksilver uses a filled circle:
+This implementation renders tiles as flat colored hexagons. Primary colors are color-only, rainbow uses a rainbow gradient to indicate its wildcard role, +/− use their symbols, and dot uses a filled circle:
 
 ```text
-Red    Fire
-Yellow Air
-Green  Earth
-Blue   Water
-Rainbow Salt
-Circle Quicksilver
+Red    Red primary color
+Yellow Yellow primary color
+Green  Green primary color
+Blue   Blue primary color
+Rainbow Rainbow
+●      Dot
 ```
 
-Metals count down from the first merge to the final gold clear:
+Purples count down from the first merge to the final 0 clear:
 
 ```text
-5 Lead
-4 Tin
-3 Iron
-2 Copper
-1 Silver
-0 Gold
+5 Purple 5
+4 Purple 4
+3 Purple 3
+2 Purple 2
+1 Purple 1
+0 Purple 0
 ```
 
-## Free Marble Rule
+## Free Tile Rule
 
-A marble is playable only if it is free.
+A tile is playable only if it is free.
 
-A marble is free when at least three contiguous neighbor positions around it are empty. The six neighbor positions are evaluated cyclically, so directions `4, 5, 0` count as contiguous.
+A tile is free when at least three contiguous neighbor positions around it are empty. The six neighbor positions are evaluated cyclically, so directions `4, 5, 0` count as contiguous.
 
 Empty means either:
 
-1. An in-board cell with no marble.
+1. An in-board cell with no tile.
 2. A position outside the 91-cell board.
 
-This is stricter than "three empty neighbors anywhere." The empty positions must form an adjacent run around the marble.
+This is stricter than "three empty neighbors anywhere." The empty positions must form an adjacent run around the tile.
 
 Reference implementation:
 
 ```ts
-function isFree(board, marble) {
+function isFree(board, tile) {
   const empty = directions.map(([dq, dr]) =>
-    outsideBoard(marble.q + dq, marble.r + dr) ||
-    !board[cellKey(marble.q + dq, marble.r + dr)]
+    outsideBoard(tile.q + dq, tile.r + dr) ||
+    !board[cellKey(tile.q + dq, tile.r + dr)]
   )
 
   return [0, 1, 2, 3, 4, 5].some((i) =>
@@ -106,83 +106,83 @@ function isFree(board, marble) {
 
 ## Legal Moves
 
-The goal is to clear every marble from the board.
+The goal is to clear every tile from the board.
 
-A normal move removes two free marbles that form a valid pair. Both marbles must be free at the time of selection.
+A normal move removes two free tiles that form a valid pair. Both tiles must be free at the time of selection.
 
-Gold is the only single-marble move. It can be removed by itself, but only after it is unlocked through the metal sequence.
+Purple 0 is the only single-tile move. It clears by itself, but only after it is unlocked through the purple sequence.
 
 ## Matching Rules
 
-Cardinal elements match only themselves:
+Primary colors match only themselves:
 
 ```text
-Air + Air
-Fire + Fire
-Water + Water
-Earth + Earth
+Yellow + Yellow
+Red + Red
+Blue + Blue
+Green + Green
 ```
 
-Salt matches any cardinal element or itself:
+Rainbow matches any primary color or itself:
 
 ```text
-Salt + Air
-Salt + Fire
-Salt + Water
-Salt + Earth
-Salt + Salt
+Rainbow + Yellow
+Rainbow + Red
+Rainbow + Blue
+Rainbow + Green
+Rainbow + Rainbow
 ```
 
-Vitae and Mors match only each other:
++ and − match only each other:
 
 ```text
-Vitae + Mors
++ + −
 ```
 
-Metals match Quicksilver, but only in transmutation order:
+Purples match dot (●), but only in order:
 
 ```text
-Lead   + Quicksilver
-Tin    + Quicksilver
-Iron   + Quicksilver
-Copper + Quicksilver
-Silver + Quicksilver
-Gold alone
+Purple 5 + ●
+Purple 4 + ●
+Purple 3 + ●
+Purple 2 + ●
+Purple 1 + ●
+Purple 0 alone
 ```
 
-## Metal Unlock State
+## Purple Unlock State
 
-The metal state starts at Lead.
+The purple state starts at Purple 5.
 
-Only the current metal is selectable. Later metals are locked even if physically free. Quicksilver may only form a metal pair with the currently unlocked metal.
+Only the current purple is selectable. Later purples are locked even if physically free. Dot (●) may only form a pair with the currently unlocked purple.
 
-After removing the current metal with Quicksilver, unlock the next metal:
+After removing the current purple with dot (●), unlock the next purple:
 
 ```text
-Lead -> Tin -> Iron -> Copper -> Silver -> Gold
+Purple 5 -> Purple 4 -> Purple 3 -> Purple 2 -> Purple 1 -> Purple 0
 ```
 
-After `Silver + Quicksilver`, Gold becomes unlocked. Gold is removed alone when free.
+After `Purple 1 + ●`, Purple 0 becomes unlocked. Purple 0 is removed alone when free.
 
 ## Win And Stuck States
 
 Win condition:
 
 ```text
-board has 0 marbles
+board has 0 tiles
 ```
 
 Stuck state:
 
 ```text
-board has marbles, but legalMoves(board, metalState).length === 0
+board has tiles, but legalMoves(board, purpleState).length === 0
 ```
 
 The level pack contains solvable starting boards, but the player can still make choices that lead to a stuck position.
 
 ## Board Generation
 
-Do not fill random cells with the marble multiset and assume the board is playable. Random boards are often unsolvable.
+Do not fill random cells with the tile multiset and assume the board is playable. Random boards are often unsolvable.
 
 The app loads only the committed first-party level pack:
 
@@ -192,21 +192,21 @@ public/boards/levels.dat
 
 The pack is generated by `scripts/generate-levels.mjs`, but it is not regenerated by `npm run dev`, `npm run test`, or `npm run build`. Run `npm run generate:levels -- 100` only when intentionally replacing the tracked level pack.
 
-The generator builds a clearing sequence first, then places moves in reverse order. Each reverse placement is checked so the marble or pair would be free when removed during forward play. This guarantees at least one solution path for each generated board.
+The generator builds a clearing sequence first, then places moves in reverse order. Each reverse placement is checked so the tile or pair would be free when removed during forward play. This guarantees at least one solution path for each generated board.
 
-Generated boards use a dense 55-cell mask inside the radius-5 board and force gold to the center cell `(0, 0)`. This makes the opening position less exposed than a purely random reverse placement and gives the central gold tile the intended late-game role.
+Generated boards use a dense 55-cell mask inside the radius-5 board and force Purple 0 to the center cell `(0, 0)`. This makes the opening position less exposed than a purely random reverse placement and gives the central Purple 0 tile the intended late-game role.
 
 The generated move bag contains exactly 28 removals:
 
 ```text
-16 cardinal pairs
-2 Salt + Salt pairs
-4 Vitae + Mors pairs
-5 Metal + Quicksilver pairs
-1 Gold single
+16 primary-color pairs
+2 Rainbow + Rainbow pairs
+4 + / − pairs
+5 Purple + dot pairs
+1 Purple 0 single
 ```
 
-Total removed marbles:
+Total removed tiles:
 
 ```text
 16 * 2 + 2 * 2 + 4 * 2 + 5 * 2 + 1 = 55
@@ -234,20 +234,20 @@ The app also applies a random axial rotation for variety.
 Type mapping:
 
 ```text
-1  Salt
-2  Air
-3  Fire
-4  Water
-5  Earth
-6  Quicksilver
-7  Gold
-8  Silver
-9  Copper
-10 Iron
-11 Tin
-12 Lead
-13 Vitae
-14 Mors
+1  Rainbow
+2  Yellow
+3  Red
+4  Blue
+5  Green
+6  Dot
+7  Purple 0
+8  Purple 1
+9  Purple 2
+10 Purple 3
+11 Purple 4
+12 Purple 5
+13 +
+14 −
 ```
 
 ## Required Tests For Future Changes
@@ -255,12 +255,12 @@ Type mapping:
 Future agents should preserve tests for:
 
 1. The board has exactly 91 cells.
-2. A new board has exactly 55 marbles.
-3. Starting counts match the canonical marble set.
+2. A new board has exactly 55 tiles.
+3. Starting counts match the canonical tile set.
 4. `isFree` requires three contiguous empty neighbor spaces.
 5. Off-board neighbor positions count as empty.
 6. Pair matching follows the table above.
-7. Later metals are locked until the current metal is removed with Quicksilver.
-8. Gold is a single-marble move only after Silver has been removed with Quicksilver.
+7. Later purples are locked until the current purple is removed with dot (●).
+8. Purple 0 is a single-tile move only after Purple 1 has been removed with dot (●).
 9. Generated boards have a replayable clearing solution before they are written into `levels.dat`.
-10. `levels.dat` parsing validates size, coordinates, counts, and center gold.
+10. `levels.dat` parsing validates size, coordinates, counts, and center Purple 0.

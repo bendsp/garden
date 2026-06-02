@@ -1,6 +1,6 @@
 # Garden
 
-A minimalist browser solitaire game with a radius-5 hex board, symbolic marbles, and a compact first-party level pack.
+A minimalist browser solitaire game with a radius-5 hex board, symbolic tiles, and a compact first-party level pack.
 
 The app uses flat, code-native SVG/CSS visuals. It is designed to work on desktop and phone viewports.
 

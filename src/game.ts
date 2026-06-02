@@ -57,20 +57,20 @@ export const METAL_ORDER: Metal[] = [
 ]
 
 export const MARBLE_LABELS: Record<MarbleType, string> = {
-  air: 'Air',
-  fire: 'Fire',
-  water: 'Water',
-  earth: 'Earth',
-  salt: 'Salt',
-  vitae: 'Vitae',
-  mors: 'Mors',
-  quicksilver: 'Quicksilver',
-  lead: 'Lead',
-  tin: 'Tin',
-  iron: 'Iron',
-  copper: 'Copper',
-  silver: 'Silver',
-  gold: 'Gold',
+  air: 'Yellow',
+  fire: 'Red',
+  water: 'Blue',
+  earth: 'Green',
+  salt: 'Rainbow',
+  vitae: '+',
+  mors: '−',
+  quicksilver: 'Dot',
+  lead: 'Purple 5',
+  tin: 'Purple 4',
+  iron: 'Purple 3',
+  copper: 'Purple 2',
+  silver: 'Purple 1',
+  gold: 'Purple 0',
 }
 
 export const MARBLE_MARKS: Record<MarbleType, string> = {
@@ -298,7 +298,7 @@ export function applyRemoval(state: GameState, ids: string[]): GameState {
       ? 'Cleared.'
       : movesLeft === 0
         ? 'No legal moves.'
-        : `${remaining} marbles remain.`
+        : `${remaining} tiles remain.`
   const finishedAt = remaining === 0 ? Date.now() : undefined
 
   return {
@@ -406,7 +406,7 @@ export function generateBoard(seed = Math.floor(Math.random() * 2 ** 32)): GameS
         selectedIds: [],
         history: [],
         metalIndex: 0,
-        message: 'Select a free marble.',
+        message: 'Select a free tile.',
         startedAt: Date.now(),
       }
     }
@@ -476,7 +476,7 @@ export function parseLevelsDat(buffer: ArrayBuffer, seed = Math.floor(Math.rando
     ([type, count]) => counts[type as MarbleType] === count,
   )
   if (!countsOk || Object.keys(board).length !== 55) {
-    throw new Error('Invalid levels.dat marble counts.')
+    throw new Error('Invalid levels.dat tile counts.')
   }
 
   const initialBoard = cloneBoard(board)

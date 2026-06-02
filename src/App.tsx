@@ -63,15 +63,15 @@ function hexPoints(size: number) {
 
 function describeSelection(types: MarbleType[], metalIndex: number) {
   if (types.length === 0) {
-    return 'Select a free marble.'
+    return 'Select a free tile.'
   }
 
   if (types.length === 1) {
     const type = types[0]
     if (isSingleMatch(type, metalIndex)) {
-      return 'Tap gold again to clear it.'
+      return 'Tap Purple 0 again to clear it.'
     }
-    return `${MARBLE_LABELS[type]} selected. Choose a matching free marble.`
+    return `${MARBLE_LABELS[type]} selected. Choose a matching free tile.`
   }
 
   return isPairMatch(types[0], types[1], metalIndex) ? 'Match.' : 'Not a match.'
@@ -266,7 +266,7 @@ function RulesModal({ onClose }: { onClose: () => void }) {
 
         <div className="rules-top">
           <section className="rules-block">
-            <h2 id="rules-title">Clearing Marbles</h2>
+            <h2 id="rules-title">Clearing Tiles</h2>
             <div className="rules-cards one-up">
               <article>
                 <MiniRuleBoard
@@ -278,11 +278,11 @@ function RulesModal({ onClose }: { onClose: () => void }) {
               </article>
             </div>
             <p>Your goal is to clear the board.</p>
-            <p>Select a free marble, and then pick a matching marble to remove them both.</p>
+            <p>Select a free tile, and then pick a matching tile to remove them both.</p>
           </section>
 
           <section className="rules-block">
-            <h2>Unlocking Marbles</h2>
+            <h2>Unlocking Tiles</h2>
             <div className="rules-cards two-up">
               <article>
                 <MiniRuleBoard
@@ -312,7 +312,7 @@ function RulesModal({ onClose }: { onClose: () => void }) {
               </article>
             </div>
             <p>
-              A marble is only free if it has <strong>3 contiguous</strong> empty spaces next to it. Spaces off the
+              A tile is only free if it has <strong>3 contiguous</strong> empty spaces next to it. Spaces off the
               board count as empty spaces.
             </p>
           </section>
@@ -327,7 +327,7 @@ function RulesModal({ onClose }: { onClose: () => void }) {
                   <MatchPair key={type} types={[type, type]} />
                 ))}
               </div>
-              <p>The four cardinal elements match with others of the same type.</p>
+              <p>The primary colors match with other tiles of the same color.</p>
             </article>
 
             <article>
@@ -337,14 +337,14 @@ function RulesModal({ onClose }: { onClose: () => void }) {
                 ))}
                 <MatchPair types={['salt', 'salt']} />
               </div>
-              <p>Salt matches with any cardinal element, or with itself.</p>
+              <p>Rainbow matches with any primary color, or with itself.</p>
             </article>
 
             <article>
               <div className="combo-row">
                 <MatchPair types={['vitae', 'mors']} />
               </div>
-              <p>Vitae and Mors will only match with their opposite.</p>
+              <p>+ and − only match with each other.</p>
             </article>
 
             <article>
@@ -359,7 +359,7 @@ function RulesModal({ onClose }: { onClose: () => void }) {
                 <span className="chain-arrow">›</span>
                 <RuleHex type="gold" />
               </div>
-              <p>The metals match with quicksilver, but only in transmutation order. Gold clears alone.</p>
+              <p>The purples match with dot (●), but only in order. 0 clears alone.</p>
             </article>
           </div>
         </section>
@@ -502,7 +502,7 @@ function App() {
               selectedIds: [],
               message:
                 marble.type === getUnlockedMetal(current.metalIndex) || marble.type === 'quicksilver'
-                  ? 'That marble is still blocked.'
+                  ? 'That tile is still blocked.'
                   : `${MARBLE_LABELS[marble.type]} is locked for now.`,
             }
           : current,
@@ -680,7 +680,7 @@ function App() {
         </svg>
       </section>
 
-      <section className="tray" aria-label="Remaining marbles">
+      <section className="tray" aria-label="Remaining tiles">
         {counts.map(({ type, count }) => (
           <div key={type} className={`token marble-${type}`} title={MARBLE_LABELS[type]}>
             {MARBLE_MARKS[type] && <span>{MARBLE_MARKS[type]}</span>}
