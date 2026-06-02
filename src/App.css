@@ -322,8 +322,8 @@ button:disabled {
 
 @media (max-width: 680px) {
   .app {
-    padding: 10px;
-    gap: 10px;
+    padding: 4px;
+    gap: 8px;
   }
 
   .topbar {
@@ -350,7 +350,7 @@ button:disabled {
   }
 
   .board-wrap {
-    margin-inline: -10px;
+    margin-inline: -4px;
     border-inline: 0;
     border-radius: 0;
     padding: 0;

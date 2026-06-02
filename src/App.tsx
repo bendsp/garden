@@ -21,7 +21,7 @@ import {
 const HEX_SIZE = 31
 const HEX_WIDTH = Math.sqrt(3) * HEX_SIZE
 const HEX_HEIGHT = 2 * HEX_SIZE
-const BOARD_PADDING = 44
+const BOARD_PADDING = 4
 const BOARD_WIDTH = HEX_WIDTH * 11 + BOARD_PADDING * 2
 const BOARD_HEIGHT = HEX_HEIGHT * 8.5 + BOARD_PADDING * 2
 
