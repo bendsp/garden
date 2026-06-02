@@ -735,11 +735,15 @@ function App() {
       <section className="tray" aria-label="Remaining tiles">
         <div className="tray-row" aria-label="General matching inventory">
           {INVENTORY_GUIDE_TYPES.map((type) => (
-            <GuideToken key={type} type={type} count={countFor(type)} warnOdd={type === 'salt' || !MARBLE_MARKS[type]} />
+            <Fragment key={type}>
+              {type === 'vitae' && <span className="tray-divider" aria-hidden="true" />}
+              <GuideToken type={type} count={countFor(type)} warnOdd={type === 'salt' || !MARBLE_MARKS[type]} />
+            </Fragment>
           ))}
         </div>
         <div className="tray-row purple-track" aria-label="Purple progression">
           <GuideToken type="quicksilver" count={countFor('quicksilver')} />
+          <span className="tray-divider" aria-hidden="true" />
           {METAL_ORDER.map((type, index) => (
             <Fragment key={type}>
               <GuideToken type={type} count={countFor(type)} showCount={false} state={purpleStateFor(index)} />
