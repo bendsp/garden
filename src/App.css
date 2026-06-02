@@ -219,126 +219,178 @@ button:disabled {
   background: var(--salt-rainbow);
 }
 
-.token.marble-salt {
-  background: var(--salt-rainbow);
-}
-
 .marble-air polygon,
-.token.marble-air,
 .rule-hex.marble-air {
   fill: #f0ca4d;
   background: #f0ca4d;
 }
 
 .marble-fire polygon,
-.token.marble-fire,
 .rule-hex.marble-fire {
   fill: #e9593f;
   background: #e9593f;
 }
 
 .marble-water polygon,
-.token.marble-water,
 .rule-hex.marble-water {
   fill: #4d9ce8;
   background: #4d9ce8;
 }
 
 .marble-earth polygon,
-.token.marble-earth,
 .rule-hex.marble-earth {
   fill: #62a83c;
   background: #62a83c;
 }
 
 .marble-vitae polygon,
-.token.marble-vitae,
 .rule-hex.marble-vitae {
   fill: #c98c65;
   background: #c98c65;
 }
 
 .marble-mors polygon,
-.token.marble-mors,
 .rule-hex.marble-mors {
   fill: #485f65;
   background: #485f65;
 }
 
 .marble-quicksilver polygon,
-.token.marble-quicksilver,
 .rule-hex.marble-quicksilver {
   fill: var(--purple);
   background: var(--purple);
 }
 
 .marble-lead polygon,
-.token.marble-lead,
 .rule-hex.marble-lead {
   fill: var(--purple);
   background: var(--purple);
 }
 
 .marble-tin polygon,
-.token.marble-tin,
 .rule-hex.marble-tin {
   fill: var(--purple);
   background: var(--purple);
 }
 
 .marble-iron polygon,
-.token.marble-iron,
 .rule-hex.marble-iron {
   fill: var(--purple);
   background: var(--purple);
 }
 
 .marble-copper polygon,
-.token.marble-copper,
 .rule-hex.marble-copper {
   fill: var(--purple);
   background: var(--purple);
 }
 
 .marble-silver polygon,
-.token.marble-silver,
 .rule-hex.marble-silver {
   fill: var(--purple);
   background: var(--purple);
 }
 
 .marble-gold polygon,
-.token.marble-gold,
 .rule-hex.marble-gold {
   fill: var(--purple);
   background: var(--purple);
 }
 
 .tray {
-  display: grid;
-  grid-template-columns: repeat(14, minmax(0, 1fr));
-  gap: 6px;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-.token {
-  min-width: 0;
-  height: 36px;
-  border-radius: 7px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  color: #fff;
+  gap: 9px;
+  min-width: 0;
   user-select: none;
   -webkit-user-select: none;
 }
 
-.token span,
-.token strong {
+.tray-group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.tray-separator {
+  width: 1px;
+  height: 32px;
+  flex: 0 0 auto;
+  background: var(--line);
+}
+
+.token {
+  width: 42px;
+  height: 48px;
+  flex: 0 0 auto;
+  overflow: visible;
+  background: transparent;
+  color: #fff;
+}
+
+.token polygon {
+  fill: var(--hole);
+  stroke: rgba(25, 25, 25, 0.26);
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.token.marble-salt polygon {
+  fill: url("#salt-rainbow");
+}
+
+.token.marble-air polygon {
+  fill: #f0ca4d;
+}
+
+.token.marble-fire polygon {
+  fill: #e9593f;
+}
+
+.token.marble-water polygon {
+  fill: #4d9ce8;
+}
+
+.token.marble-earth polygon {
+  fill: #62a83c;
+}
+
+.token.marble-vitae polygon {
+  fill: #c98c65;
+}
+
+.token.marble-mors polygon {
+  fill: #485f65;
+}
+
+.token.marble-quicksilver polygon,
+.token.marble-lead polygon,
+.token.marble-tin polygon,
+.token.marble-iron polygon,
+.token.marble-copper polygon,
+.token.marble-silver polygon,
+.token.marble-gold polygon {
+  fill: var(--purple);
+}
+
+.token-mark {
+  fill: rgba(255, 255, 255, 0.95);
+  font-size: 20px;
+  font-weight: 850;
+  pointer-events: none;
+}
+
+.token-count {
+  fill: rgba(255, 255, 255, 0.96);
   font-size: 13px;
-  line-height: 1;
+  font-weight: 850;
+  paint-order: stroke;
+  pointer-events: none;
+  stroke: rgba(25, 25, 25, 0.22);
+  stroke-width: 2.3px;
 }
 
 .app-loading {
@@ -691,7 +743,28 @@ button:disabled {
   }
 
   .tray {
-    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 5px;
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding: 0 2px 2px;
+    scrollbar-width: none;
+  }
+
+  .tray::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tray-group {
+    gap: 3px;
+  }
+
+  .tray-separator {
+    height: 29px;
+  }
+
+  .token {
+    width: 38px;
+    height: 44px;
   }
 
   .rules-backdrop {

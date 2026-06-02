@@ -23,21 +23,16 @@ const HEX_HEIGHT = 2 * HEX_SIZE
 const DESKTOP_BOARD_PADDING = 44
 const MOBILE_BOARD_PADDING = 4
 
-const TYPE_ORDER: MarbleType[] = [
+const COLOR_GUIDE_TYPES: MarbleType[] = [
   'salt',
   'fire',
   'air',
   'earth',
   'water',
+]
+const POLARITY_GUIDE_TYPES: MarbleType[] = [
   'vitae',
   'mors',
-  'lead',
-  'tin',
-  'iron',
-  'copper',
-  'silver',
-  'quicksilver',
-  'gold',
 ]
 
 function getBoardMetrics(padding: number) {
@@ -129,6 +124,28 @@ function RuleHex({
           {label}
         </text>
       )}
+    </svg>
+  )
+}
+
+function GuideToken({ type, count }: { type: MarbleType; count: number }) {
+  const mark = MARBLE_MARKS[type]
+  return (
+    <svg
+      className={`token marble-${type}`}
+      viewBox="-24 -24 48 48"
+      role="img"
+      aria-label={`${count} ${MARBLE_LABELS[type]} remaining`}
+    >
+      <polygon points={hexPoints(20)} />
+      {mark && (
+        <text className="token-mark" textAnchor="middle" dominantBaseline="central">
+          {mark}
+        </text>
+      )}
+      <text className="token-count" x="15" y="-12" textAnchor="middle" dominantBaseline="central">
+        {count}
+      </text>
     </svg>
   )
 }
@@ -391,10 +408,11 @@ function App() {
     .map((id) => marbles.find((marble) => marble.id === id))
     .filter(Boolean) as Marble[]
     : []
-  const counts = TYPE_ORDER.map((type) => ({
-    type,
-    count: marbles.filter((marble) => marble.type === type).length,
-  }))
+  const countsByType = new Map<MarbleType, number>()
+  for (const marble of marbles) {
+    countsByType.set(marble.type, (countsByType.get(marble.type) ?? 0) + 1)
+  }
+  const countFor = (type: MarbleType) => countsByType.get(type) ?? 0
 
   async function newGame() {
     const seed = Math.floor(Math.random() * 2 ** 32)
@@ -585,6 +603,8 @@ function App() {
     )
   }
 
+  const currentPurple = getUnlockedMetal(game.metalIndex)
+
   return (
     <main className="app">
       <header className="topbar">
@@ -690,12 +710,22 @@ function App() {
       </section>
 
       <section className="tray" aria-label="Remaining tiles">
-        {counts.map(({ type, count }) => (
-          <div key={type} className={`token marble-${type}`} title={MARBLE_LABELS[type]}>
-            {MARBLE_MARKS[type] && <span>{MARBLE_MARKS[type]}</span>}
-            <strong>{count}</strong>
-          </div>
-        ))}
+        <div className="tray-group">
+          {COLOR_GUIDE_TYPES.map((type) => (
+            <GuideToken key={type} type={type} count={countFor(type)} />
+          ))}
+        </div>
+        <div className="tray-separator" aria-hidden="true" />
+        <div className="tray-group">
+          {POLARITY_GUIDE_TYPES.map((type) => (
+            <GuideToken key={type} type={type} count={countFor(type)} />
+          ))}
+        </div>
+        <div className="tray-separator" aria-hidden="true" />
+        <div className="tray-group">
+          <GuideToken type="quicksilver" count={countFor('quicksilver')} />
+          <GuideToken type={currentPurple} count={countFor(currentPurple)} />
+        </div>
       </section>
 
       {game.finishedAt && (
