@@ -14,7 +14,6 @@ import {
   isPairMatch,
   isSingleMatch,
   parseLevelsDat,
-  restartGame,
   undoGame,
 } from './game'
 
@@ -102,6 +101,165 @@ function useMediaQuery(query: string) {
   return matches
 }
 
+function RuleHex({
+  type,
+  mark,
+  empty = false,
+  locked = false,
+}: {
+  type?: MarbleType
+  mark?: string
+  empty?: boolean
+  locked?: boolean
+}) {
+  const label = mark ?? (type ? MARBLE_MARKS[type] : '')
+  return (
+    <span className={`rule-hex ${type ? `marble-${type}` : ''} ${empty ? 'is-empty' : ''} ${locked ? 'is-locked' : ''}`}>
+      {label && <span>{label}</span>}
+    </span>
+  )
+}
+
+function RuleBoard({
+  children,
+  edge = false,
+}: {
+  children: Array<MarbleType | 'empty' | 'gap' | 'locked' | 'one' | 'two' | 'three'>
+  edge?: boolean
+}) {
+  return (
+    <div className={`rule-board ${edge ? 'is-edge' : ''}`} aria-hidden="true">
+      {children.map((item, index) => {
+        if (item === 'gap') {
+          return <span key={index} />
+        }
+        if (item === 'empty') {
+          return <RuleHex key={index} empty />
+        }
+        if (item === 'locked') {
+          return <RuleHex key={index} type="water" mark="×" locked />
+        }
+        if (item === 'one' || item === 'two' || item === 'three') {
+          return <RuleHex key={index} empty mark={String(['one', 'two', 'three'].indexOf(item) + 1)} />
+        }
+        return <RuleHex key={index} type={item} />
+      })}
+    </div>
+  )
+}
+
+function MatchPair({ types }: { types: [MarbleType, MarbleType] }) {
+  return (
+    <span className="match-pair">
+      <RuleHex type={types[0]} />
+      <span>+</span>
+      <RuleHex type={types[1]} />
+    </span>
+  )
+}
+
+function RulesModal({ onClose }: { onClose: () => void }) {
+  const elementTypes: MarbleType[] = ['fire', 'air', 'earth', 'water']
+  const metalTypes: MarbleType[] = ['lead', 'tin', 'iron', 'copper', 'silver']
+
+  return (
+    <div className="rules-backdrop" role="presentation" onClick={onClose}>
+      <section
+        className="rules-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="rules-title"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <button className="rules-close" type="button" aria-label="Close rules" onClick={onClose}>
+          ×
+        </button>
+
+        <div className="rules-top">
+          <section className="rules-block">
+            <h2 id="rules-title">Clearing Marbles</h2>
+            <div className="rules-cards two-up">
+              <article>
+                <RuleBoard>{['empty', 'empty', 'empty', 'empty', 'fire', 'fire', 'empty', 'empty', 'empty']}</RuleBoard>
+              </article>
+              <article>
+                <RuleBoard>{['empty', 'empty', 'empty', 'empty', 'fire', 'fire', 'empty', 'empty', 'empty']}</RuleBoard>
+              </article>
+            </div>
+            <p>Your goal is to clear the board.</p>
+            <p>Select a free marble, and then pick a matching marble to remove them both.</p>
+          </section>
+
+          <section className="rules-block">
+            <h2>Unlocking Marbles</h2>
+            <div className="rules-cards three-up">
+              <article>
+                <RuleBoard>{['empty', 'salt', 'empty', 'salt', 'locked', 'salt', 'empty', 'salt', 'empty']}</RuleBoard>
+              </article>
+              <article>
+                <RuleBoard>{['empty', 'salt', 'one', 'salt', 'water', 'two', 'empty', 'salt', 'three']}</RuleBoard>
+              </article>
+              <article>
+                <RuleBoard edge>{['one', 'salt', 'empty', 'water', 'salt', 'empty', 'two', 'gap', 'three']}</RuleBoard>
+              </article>
+            </div>
+            <div className="rules-caption-grid">
+              <p>A marble is only free if it has <strong>3 contiguous</strong> empty spaces next to it.</p>
+              <p>Spaces off the board count as empty spaces.</p>
+            </div>
+          </section>
+        </div>
+
+        <section className="rules-combinations">
+          <h2>Matching Combinations</h2>
+          <div className="combination-grid">
+            <article>
+              <div className="combo-row">
+                {elementTypes.map((type) => (
+                  <MatchPair key={type} types={[type, type]} />
+                ))}
+              </div>
+              <p>The four cardinal elements match with others of the same type.</p>
+            </article>
+
+            <article>
+              <div className="combo-row">
+                {elementTypes.map((type) => (
+                  <MatchPair key={type} types={[type, 'salt']} />
+                ))}
+                <MatchPair types={['salt', 'salt']} />
+              </div>
+              <p>Salt matches with any cardinal element, or with itself.</p>
+            </article>
+
+            <article>
+              <div className="combo-row">
+                <MatchPair types={['vitae', 'mors']} />
+              </div>
+              <p>Vitae and Mors will only match with their opposite.</p>
+            </article>
+
+            <article>
+              <div className="metal-chain" aria-hidden="true">
+                {metalTypes.map((type) => (
+                  <span key={type} className="metal-step">
+                    <RuleHex type={type} />
+                    <span>+</span>
+                    <RuleHex type="quicksilver" />
+                  </span>
+                ))}
+                <span className="chain-arrow">›</span>
+                <RuleHex type="gold" />
+              </div>
+              <p>The metals match with quicksilver, but only in transmutation order. Gold clears alone.</p>
+            </article>
+          </div>
+        </section>
+      </section>
+    </div>
+  )
+}
+
 function App() {
   const [game, setGame] = useState<GameState | null>(null)
   const [loadError, setLoadError] = useState('')
@@ -163,6 +321,21 @@ function App() {
       cancelled = true
     }
   }, [])
+
+  useEffect(() => {
+    if (!rulesOpen) {
+      return undefined
+    }
+
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setRulesOpen(false)
+      }
+    }
+
+    document.addEventListener('keydown', closeOnEscape)
+    return () => document.removeEventListener('keydown', closeOnEscape)
+  }, [rulesOpen])
 
   function recordWin(nextGame: GameState) {
     if (!nextGame.finishedAt) {
@@ -312,9 +485,6 @@ function App() {
           >
             Undo
           </button>
-          <button type="button" onClick={() => setGame((current) => (current ? restartGame(current) : current))}>
-            Restart
-          </button>
           <button type="button" onClick={() => void newGame()}>
             New
           </button>
@@ -423,12 +593,7 @@ function App() {
         </section>
       )}
 
-      {rulesOpen && (
-        <aside className="rules-panel" aria-label="Rules summary">
-          <p>Clear the board by removing two free matching marbles. A marble is free when it touches three contiguous empty spaces; outside the board counts as empty.</p>
-          <p>Elements match themselves. Salt matches any element or salt. Vitae and mors match each other. Metals match quicksilver in order: 1 to 5, then gold clears alone.</p>
-        </aside>
-      )}
+      {rulesOpen && <RulesModal onClose={() => setRulesOpen(false)} />}
     </main>
   )
 }
