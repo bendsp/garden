@@ -290,7 +290,7 @@ function RulesModal({ onClose }: { onClose: () => void }) {
                     { position: 'northWest', type: 'fire' },
                     { position: 'northEast', type: 'fire' },
                     { position: 'west', type: 'fire' },
-                    { position: 'center', type: 'water', mark: '×', locked: true },
+                    { position: 'center', type: 'water', locked: true },
                     { position: 'east', type: 'fire' },
                     { position: 'southWest', type: 'fire' },
                     { position: 'southEast', type: 'fire' },
@@ -311,10 +311,10 @@ function RulesModal({ onClose }: { onClose: () => void }) {
                 />
               </article>
             </div>
-            <div className="rules-caption-grid">
-              <p>A marble is only free if it has <strong>3 contiguous</strong> empty spaces next to it.</p>
-              <p>Spaces off the board count as empty spaces.</p>
-            </div>
+            <p>
+              A marble is only free if it has <strong>3 contiguous</strong> empty spaces next to it. Spaces off the
+              board count as empty spaces.
+            </p>
           </section>
         </div>
 
