@@ -494,30 +494,86 @@ button:disabled {
 }
 
 .rule-hex {
-  width: 32px;
-  height: 36px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  clip-path: polygon(50% 0%, 94% 25%, 94% 75%, 50% 100%, 6% 75%, 6% 25%);
-  border: 1px solid rgba(25, 25, 25, 0.2);
-  background: var(--hole);
-  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.5);
+  width: 34px;
+  height: 40px;
+  display: inline-block;
+  flex: 0 0 auto;
+  background: transparent;
   color: rgba(255, 255, 255, 0.96);
-  font-size: 17px;
-  font-weight: 800;
-  line-height: 1;
+  overflow: visible;
+}
+
+.rule-hex[class*="marble-"] {
+  background: transparent;
+}
+
+.rule-hex polygon {
+  fill: var(--hole);
+  stroke: rgba(25, 25, 25, 0.24);
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.rule-hex.marble-salt polygon {
+  fill: url("#salt-rainbow");
+}
+
+.rule-hex.marble-air polygon {
+  fill: #f0ca4d;
+}
+
+.rule-hex.marble-fire polygon {
+  fill: #e9593f;
+}
+
+.rule-hex.marble-water polygon {
+  fill: #4d9ce8;
+}
+
+.rule-hex.marble-earth polygon {
+  fill: #62a83c;
+}
+
+.rule-hex.marble-vitae polygon {
+  fill: #c98c65;
+}
+
+.rule-hex.marble-mors polygon {
+  fill: #485f65;
+}
+
+.rule-hex.marble-quicksilver polygon,
+.rule-hex.marble-lead polygon,
+.rule-hex.marble-tin polygon,
+.rule-hex.marble-iron polygon,
+.rule-hex.marble-copper polygon,
+.rule-hex.marble-silver polygon,
+.rule-hex.marble-gold polygon {
+  fill: var(--purple);
+}
+
+.rule-hex text {
+  fill: currentColor;
+  font-size: 20px;
+  font-weight: 850;
+  pointer-events: none;
 }
 
 .rule-hex.is-empty {
   color: #4a453f;
-  background: #f7f5ed;
+}
+
+.rule-hex.is-empty polygon {
+  fill: #f7f5ed;
 }
 
 .rule-hex.is-off-board {
   opacity: 0.72;
-  background: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.72) 0 4px, rgba(210, 207, 198, 0.72) 4px 8px);
-  border-color: rgba(25, 25, 25, 0.12);
+}
+
+.rule-hex.is-off-board polygon {
+  fill: #eeeae0;
+  stroke: rgba(25, 25, 25, 0.12);
 }
 
 .rule-hex.is-locked {
@@ -527,14 +583,6 @@ button:disabled {
 
 .rules-combinations {
   margin-top: 26px;
-  border: 1px solid #8d877c;
-  padding: 20px 18px 24px;
-}
-
-.rules-combinations h2 {
-  width: min(520px, 100%);
-  margin: -34px auto 18px;
-  background: #f4f1e8;
 }
 
 .combination-grid {
@@ -681,11 +729,7 @@ button:disabled {
   }
 
   .rules-combinations {
-    padding: 18px 12px;
-  }
-
-  .rules-combinations h2 {
-    margin-top: -31px;
+    margin-top: 22px;
   }
 
   .combo-row,

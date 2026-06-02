@@ -116,13 +116,20 @@ function RuleHex({
 }) {
   const label = mark ?? (type ? MARBLE_MARKS[type] : '')
   return (
-    <span
+    <svg
       className={`rule-hex ${type ? `marble-${type}` : ''} ${empty ? 'is-empty' : ''} ${
         locked ? 'is-locked' : ''
       } ${offBoard ? 'is-off-board' : ''}`}
+      viewBox="-24 -24 48 48"
+      aria-hidden="true"
     >
-      {label && <span>{label}</span>}
-    </span>
+      <polygon points={hexPoints(21)} />
+      {label && (
+        <text textAnchor="middle" dominantBaseline="central">
+          {label}
+        </text>
+      )}
+    </svg>
   )
 }
 
