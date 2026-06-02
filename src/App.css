@@ -129,7 +129,7 @@ button:disabled {
   -webkit-user-select: none;
 }
 
-.marble:focus-visible polygon {
+.marble:focus-visible .marble-face {
   stroke: #111;
   stroke-width: 4;
 }
@@ -139,36 +139,73 @@ button:disabled {
   filter: grayscale(0.35);
 }
 
-.marble.is-free polygon {
+.marble.is-free .marble-face {
   stroke: rgba(25, 25, 25, 0.46);
 }
 
-.marble.is-selected polygon {
+.marble.is-selected .marble-face {
   stroke: #111;
   stroke-width: 4;
 }
 
-.marble.is-match-candidate polygon {
-  animation: candidate-glow 1.8s ease-in-out infinite;
-  filter: drop-shadow(0 0 5px rgba(245, 194, 66, 0.34)) drop-shadow(0 0 11px rgba(245, 194, 66, 0.22));
-  stroke: rgba(172, 122, 15, 0.8);
-  stroke-width: 3;
+.marble .match-pulse {
+  animation: candidate-pulse 1.35s ease-out infinite;
+  fill: none;
+  filter: drop-shadow(0 0 7px rgba(255, 255, 255, 0.7)) drop-shadow(0 0 14px rgba(246, 208, 83, 0.46));
+  opacity: 0;
+  pointer-events: none;
+  stroke: rgba(255, 255, 255, 0.96);
+  stroke-linejoin: round;
+  stroke-width: 4;
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
-@keyframes candidate-glow {
+.marble.is-match-candidate .marble-face {
+  animation: candidate-face-glow 1.35s ease-in-out infinite;
+  filter: drop-shadow(0 0 7px rgba(255, 255, 255, 0.58)) drop-shadow(0 0 15px rgba(246, 208, 83, 0.34));
+  stroke: rgba(255, 255, 255, 0.92);
+  stroke-width: 3.5;
+}
+
+@keyframes candidate-pulse {
+  0% {
+    opacity: 0;
+    stroke-width: 5;
+    transform: scale(1.2);
+  }
+
+  22% {
+    opacity: 0.95;
+  }
+
+  100% {
+    opacity: 0;
+    stroke-width: 1.4;
+    transform: scale(0.68);
+  }
+}
+
+@keyframes candidate-face-glow {
   0%,
   100% {
-    filter: drop-shadow(0 0 4px rgba(245, 194, 66, 0.24)) drop-shadow(0 0 9px rgba(245, 194, 66, 0.16));
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.44)) drop-shadow(0 0 11px rgba(246, 208, 83, 0.24));
   }
 
   50% {
-    filter: drop-shadow(0 0 7px rgba(245, 194, 66, 0.42)) drop-shadow(0 0 15px rgba(245, 194, 66, 0.26));
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.78)) drop-shadow(0 0 20px rgba(246, 208, 83, 0.44));
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .marble.is-match-candidate polygon {
+  .marble .match-pulse,
+  .marble.is-match-candidate .marble-face {
     animation: none;
+  }
+
+  .marble .match-pulse {
+    opacity: 0.55;
+    transform: scale(0.92);
   }
 }
 

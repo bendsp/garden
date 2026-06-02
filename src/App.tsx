@@ -192,6 +192,22 @@ function App() {
     setGame(nextGame)
   }
 
+  function clearSelection() {
+    if (!game?.selectedIds.length || game.finishedAt) {
+      return
+    }
+
+    setGame((current) =>
+      current
+        ? {
+            ...current,
+            selectedIds: [],
+            message: 'Selection cleared.',
+          }
+        : current,
+    )
+  }
+
   function selectMarble(marble: Marble) {
     if (!game || game.finishedAt) {
       return
@@ -306,7 +322,17 @@ function App() {
       </header>
 
       <section className="board-wrap" aria-label="Puzzle board">
-        <svg className="board" viewBox={`0 0 ${boardMetrics.width} ${boardMetrics.height}`} role="img" aria-label="Hexagonal puzzle board">
+        <svg
+          className="board"
+          viewBox={`0 0 ${boardMetrics.width} ${boardMetrics.height}`}
+          role="img"
+          aria-label="Hexagonal puzzle board"
+          onClick={(event) => {
+            if (event.target instanceof Element && !event.target.closest('.marble')) {
+              clearSelection()
+            }
+          }}
+        >
           <defs>
             <linearGradient id="salt-rainbow" x1="0" y1="0" x2="1" y2="1">
               <stop offset="0%" stopColor="#7065f2" />
@@ -351,7 +377,10 @@ function App() {
                   role="button"
                   tabIndex={0}
                   aria-label={`${MARBLE_LABELS[marble.type]} ${free ? 'free' : 'locked'}`}
-                  onClick={() => selectMarble(marble)}
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    selectMarble(marble)
+                  }}
                   onKeyDown={(event) => {
                     if (event.key === 'Enter' || event.key === ' ') {
                       event.preventDefault()
@@ -359,7 +388,8 @@ function App() {
                     }
                   }}
                 >
-                  <polygon points={hexPoints(HEX_SIZE - 5)} />
+                  {matchCandidate && <polygon className="match-pulse" points={hexPoints(HEX_SIZE - 1)} />}
+                  <polygon className="marble-face" points={hexPoints(HEX_SIZE - 5)} />
                   {mark && (
                     <text aria-hidden="true" textAnchor="middle" dominantBaseline="central">
                       {mark}
