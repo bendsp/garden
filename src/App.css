@@ -35,12 +35,6 @@
   font-weight: 650;
 }
 
-.topbar p {
-  margin: 6px 0 0;
-  color: var(--muted);
-  font-size: 14px;
-}
-
 .actions {
   display: flex;
   gap: 8px;
@@ -277,19 +271,6 @@ button:disabled {
 .token strong {
   font-size: 13px;
   line-height: 1;
-}
-
-.footer-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  color: var(--muted);
-  font-size: 13px;
-}
-
-.link-button {
-  min-height: 34px;
 }
 
 .rules-panel {

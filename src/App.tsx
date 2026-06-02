@@ -84,7 +84,6 @@ function App() {
   const [loadError, setLoadError] = useState('')
   const [wins, setWins] = useState(() => Number(localStorage.getItem('garden:wins') ?? '0'))
   const [countedWin, setCountedWin] = useState<string | null>(null)
-  const [now, setNow] = useState(() => Date.now())
   const [rulesOpen, setRulesOpen] = useState(false)
   const marbles = game ? Object.values(game.board) : []
   const selectedMarbles = game
@@ -92,10 +91,8 @@ function App() {
     .map((id) => marbles.find((marble) => marble.id === id))
     .filter(Boolean) as Marble[]
     : []
-  const selectedTypes = selectedMarbles.map((marble) => marble.type)
   const moveCount = game ? legalMoves(game.board, game.metalIndex).length : 0
   const remaining = marbles.length
-  const elapsedMs = game ? (game.finishedAt ?? now) - game.startedAt : 0
   const counts = TYPE_ORDER.map((type) => ({
     type,
     count: marbles.filter((marble) => marble.type === type).length,
@@ -142,11 +139,6 @@ function App() {
     return () => {
       cancelled = true
     }
-  }, [])
-
-  useEffect(() => {
-    const timer = window.setInterval(() => setNow(Date.now()), 1000)
-    return () => window.clearInterval(timer)
   }, [])
 
   function recordWin(nextGame: GameState) {
@@ -265,9 +257,11 @@ function App() {
       <header className="topbar">
         <div>
           <h1>Garden</h1>
-          <p>{remaining === 0 ? 'Board cleared.' : game.message}</p>
         </div>
         <div className="actions" aria-label="Game controls">
+          <button type="button" onClick={() => setRulesOpen((open) => !open)}>
+            Rules
+          </button>
           <button
             type="button"
             onClick={() => setGame((current) => (current ? undoGame(current) : current))}
@@ -357,14 +351,6 @@ function App() {
             <strong>{count}</strong>
           </div>
         ))}
-      </section>
-
-      <section className="footer-row">
-        <button type="button" className="link-button" onClick={() => setRulesOpen((open) => !open)}>
-          {rulesOpen ? 'Hide rules' : 'Rules'}
-        </button>
-        <span>Level {game.levelNumber ?? 'custom'} · {formatTime(elapsedMs)}</span>
-        <span>{describeSelection(selectedTypes, game.metalIndex)}</span>
       </section>
 
       {game.finishedAt && (
