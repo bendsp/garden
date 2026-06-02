@@ -72,7 +72,7 @@ button:disabled {
   border: 1px solid var(--line);
   border-radius: 8px;
   box-shadow: var(--shadow);
-  padding: clamp(6px, 2vw, 18px);
+  padding: clamp(4px, 0.8vw, 8px) clamp(6px, 2vw, 18px);
   touch-action: manipulation;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
