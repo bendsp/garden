@@ -132,11 +132,13 @@ function GuideToken({
   count,
   showCount = true,
   state,
+  warnOdd = false,
 }: {
   type: MarbleType
   count: number
   showCount?: boolean
   state?: 'completed' | 'current' | 'future'
+  warnOdd?: boolean
 }) {
   const mark = MARBLE_MARKS[type]
   return (
@@ -153,8 +155,8 @@ function GuideToken({
         </text>
       )}
       {showCount && (
-        <g className="token-count-badge">
-          <circle cx="15" cy="-13" r="7.5" />
+        <g className={`token-count-badge ${warnOdd && count % 2 === 1 ? 'is-odd' : ''}`}>
+          <circle cx="15" cy="-13" r="8.8" />
           <text className="token-count" x="15" y="-13" textAnchor="middle" dominantBaseline="central">
             {count}
           </text>
@@ -733,7 +735,7 @@ function App() {
       <section className="tray" aria-label="Remaining tiles">
         <div className="tray-row" aria-label="General matching inventory">
           {INVENTORY_GUIDE_TYPES.map((type) => (
-            <GuideToken key={type} type={type} count={countFor(type)} />
+            <GuideToken key={type} type={type} count={countFor(type)} warnOdd={type === 'salt' || !MARBLE_MARKS[type]} />
           ))}
         </div>
         <div className="tray-row purple-track" aria-label="Purple progression">

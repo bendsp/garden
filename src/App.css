@@ -400,13 +400,17 @@ button:disabled {
 
 .token-count {
   fill: #292521;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 900;
   pointer-events: none;
 }
 
 .token .token-count {
   fill: #292521;
+}
+
+.token-count-badge.is-odd .token-count {
+  fill: #d0342c;
 }
 
 .token.is-completed {
@@ -798,7 +802,7 @@ button:disabled {
   }
 
   .token-count {
-    font-size: 13px;
+    font-size: 15px;
   }
 
   .rules-backdrop {
