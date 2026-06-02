@@ -111,9 +111,11 @@ button:disabled {
 .marble polygon {
   stroke: rgba(25, 25, 25, 0.22);
   stroke-width: 2;
+  filter: none;
   transition:
     transform 120ms ease,
     opacity 120ms ease,
+    filter 180ms ease,
     stroke-width 120ms ease;
 }
 
@@ -144,6 +146,30 @@ button:disabled {
 .marble.is-selected polygon {
   stroke: #111;
   stroke-width: 4;
+}
+
+.marble.is-match-candidate polygon {
+  animation: candidate-glow 1.8s ease-in-out infinite;
+  filter: drop-shadow(0 0 5px rgba(245, 194, 66, 0.34)) drop-shadow(0 0 11px rgba(245, 194, 66, 0.22));
+  stroke: rgba(172, 122, 15, 0.8);
+  stroke-width: 3;
+}
+
+@keyframes candidate-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 4px rgba(245, 194, 66, 0.24)) drop-shadow(0 0 9px rgba(245, 194, 66, 0.16));
+  }
+
+  50% {
+    filter: drop-shadow(0 0 7px rgba(245, 194, 66, 0.42)) drop-shadow(0 0 15px rgba(245, 194, 66, 0.26));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marble.is-match-candidate polygon {
+    animation: none;
+  }
 }
 
 .marble-quicksilver text,

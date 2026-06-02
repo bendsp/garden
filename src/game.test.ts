@@ -13,6 +13,7 @@ import {
   generateBoard,
   isFree,
   isPairMatch,
+  isSingleMatch,
   parseLevelsDat,
   validateGeneratedBoard,
 } from './game'
@@ -77,6 +78,12 @@ describe('garden rules', () => {
     expect(isPairMatch('lead', 'quicksilver', 0)).toBe(true)
     expect(isPairMatch('tin', 'quicksilver', 0)).toBe(false)
     expect(isPairMatch('tin', 'quicksilver', 1)).toBe(true)
+  })
+
+  it('allows gold to clear as a single match only after the metal sequence is unlocked', () => {
+    expect(isSingleMatch('gold', 4)).toBe(false)
+    expect(isSingleMatch('gold', 5)).toBe(true)
+    expect(isSingleMatch('silver', 5)).toBe(false)
   })
 
   it('uses color-only elements and salt, circle quicksilver, and countdown metal labels', () => {

@@ -213,13 +213,13 @@ function App() {
       return
     }
 
-    if (game.selectedIds.includes(marble.id)) {
-      if (isSingleMatch(marble.type, game.metalIndex)) {
-        playMatchSound()
-        removeMarbles([marble.id])
-        return
-      }
+    if (isSingleMatch(marble.type, game.metalIndex)) {
+      playMatchSound()
+      removeMarbles([marble.id])
+      return
+    }
 
+    if (game.selectedIds.includes(marble.id)) {
       setGame((current) =>
         current
           ? {
@@ -334,12 +334,18 @@ function App() {
               const point = toPoint(marble.cell.q, marble.cell.r, boardMetrics)
               const free = canSelect(game.board, marble, game.metalIndex)
               const selected = game.selectedIds.includes(marble.id)
+              const matchCandidate =
+                selectedMarbles.length === 1 &&
+                !selected &&
+                free &&
+                isPairMatch(selectedMarbles[0].type, marble.type, game.metalIndex)
               const mark = MARBLE_MARKS[marble.type]
               return (
                 <g
                   key={marble.id}
                   className={`marble marble-${marble.type} ${free ? 'is-free' : 'is-locked'} ${
                     selected ? 'is-selected' : ''
+                  } ${matchCandidate ? 'is-match-candidate' : ''
                   }`}
                   transform={`translate(${point.x} ${point.y})`}
                   role="button"
