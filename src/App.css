@@ -6,6 +6,7 @@
   --line: #e5e2dc;
   --hole: #f0eee8;
   --hole-stroke: #d8d2c7;
+  --rules-bg: #f4f1e8;
   --purple: #7651d1;
   --salt-rainbow: linear-gradient(135deg, #7065f2 0%, #d94fa1 22%, #ec5b43 40%, #efcf58 58%, #55c77d 76%, #4d9ce8 100%);
   --shadow: 0 14px 40px rgba(20, 20, 20, 0.08);
@@ -304,6 +305,10 @@ button:disabled {
   justify-content: center;
   gap: 4px;
   min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--rules-bg);
+  box-shadow: var(--shadow);
   user-select: none;
   -webkit-user-select: none;
 }
@@ -459,7 +464,7 @@ button:disabled {
   overflow: auto;
   border: 1px solid #bdb8ad;
   border-radius: 8px;
-  background: #f4f1e8;
+  background: var(--rules-bg);
   box-shadow: 0 24px 80px rgba(20, 20, 20, 0.26);
   color: #332f2a;
   padding: 28px;
@@ -788,7 +793,6 @@ button:disabled {
   .tray {
     gap: 5px;
     overflow-x: hidden;
-    padding: 0 2px 2px;
   }
 
   .tray-row {
