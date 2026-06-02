@@ -137,7 +137,7 @@ function playFallbackSound(key: string, tones: Tone[]) {
 
   try {
     const audio = new Audio(source)
-    audio.volume = 0.8
+    audio.volume = 1
     void audio.play().catch(() => {})
   } catch {
     // Sound is optional; unsupported audio should never block a move.
@@ -151,12 +151,12 @@ function playSound(key: string, tones: Tone[]) {
 }
 
 export function playSelectSound() {
-  playSound('select', [{ frequency: 420, startOffset: 0, duration: 0.055, gain: 0.025 }])
+  playSound('select', [{ frequency: 420, startOffset: 0, duration: 0.055, gain: 0.04 }])
 }
 
 export function playMatchSound() {
   playSound('match', [
-    { frequency: 620, startOffset: 0, duration: 0.07, gain: 0.028 },
-    { frequency: 820, startOffset: 0.045, duration: 0.08, gain: 0.022 },
+    { frequency: 620, startOffset: 0, duration: 0.07, gain: 0.045 },
+    { frequency: 820, startOffset: 0.045, duration: 0.08, gain: 0.035 },
   ])
 }
