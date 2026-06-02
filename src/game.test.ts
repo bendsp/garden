@@ -6,6 +6,7 @@ import {
   type Board,
   type MarbleType,
   STARTING_COUNTS,
+  applyRemoval,
   canSelect,
   cellKey,
   generateBoard,
@@ -83,6 +84,26 @@ describe('garden rules', () => {
 
     expect(canSelect(board, tin, 0)).toBe(false)
     expect(canSelect(board, tin, 1)).toBe(true)
+  })
+
+  it('marks a game finished when the last marble is removed', () => {
+    const gold = makeMarble('gold', 0, 0)
+    const game = {
+      seed: 1,
+      board: { [gold.cell.key]: gold },
+      initialBoard: { [gold.cell.key]: gold },
+      solution: [],
+      selectedIds: [],
+      history: [],
+      metalIndex: 5,
+      message: 'Test.',
+      startedAt: Date.now(),
+    }
+
+    const next = applyRemoval(game, [gold.id])
+    expect(Object.values(next.board)).toHaveLength(0)
+    expect(next.finishedAt).toBeTypeOf('number')
+    expect(next.message).toBe('Cleared.')
   })
 
   it('parses the project levels.dat format with gold at the center', () => {
