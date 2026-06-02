@@ -90,6 +90,7 @@ button:disabled {
   display: block;
   width: 100%;
   height: auto;
+  max-height: min(72svh, 760px);
   user-select: none;
   -webkit-user-select: none;
 }
@@ -355,6 +356,10 @@ button:disabled {
     border-radius: 0;
     padding: 0;
     box-shadow: none;
+  }
+
+  .board {
+    max-height: none;
   }
 
   .tray {

@@ -21,9 +21,8 @@ import {
 const HEX_SIZE = 31
 const HEX_WIDTH = Math.sqrt(3) * HEX_SIZE
 const HEX_HEIGHT = 2 * HEX_SIZE
-const BOARD_PADDING = 4
-const BOARD_WIDTH = HEX_WIDTH * 11 + BOARD_PADDING * 2
-const BOARD_HEIGHT = HEX_HEIGHT * 8.5 + BOARD_PADDING * 2
+const DESKTOP_BOARD_PADDING = 44
+const MOBILE_BOARD_PADDING = 4
 
 const TYPE_ORDER: MarbleType[] = [
   'salt',
@@ -42,10 +41,17 @@ const TYPE_ORDER: MarbleType[] = [
   'gold',
 ]
 
-function toPoint(q: number, r: number) {
+function getBoardMetrics(padding: number) {
   return {
-    x: BOARD_WIDTH / 2 + HEX_SIZE * Math.sqrt(3) * (q + r / 2),
-    y: BOARD_HEIGHT / 2 + HEX_SIZE * 1.5 * r,
+    width: HEX_WIDTH * 11 + padding * 2,
+    height: HEX_HEIGHT * 8.5 + padding * 2,
+  }
+}
+
+function toPoint(q: number, r: number, board: ReturnType<typeof getBoardMetrics>) {
+  return {
+    x: board.width / 2 + HEX_SIZE * Math.sqrt(3) * (q + r / 2),
+    y: board.height / 2 + HEX_SIZE * 1.5 * r,
   }
 }
 
@@ -79,12 +85,31 @@ function formatTime(ms: number) {
   return `${minutes}:${String(seconds).padStart(2, '0')}`
 }
 
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = useState(() =>
+    typeof window === 'undefined' ? false : window.matchMedia(query).matches,
+  )
+
+  useEffect(() => {
+    const media = window.matchMedia(query)
+    const update = () => setMatches(media.matches)
+
+    update()
+    media.addEventListener('change', update)
+    return () => media.removeEventListener('change', update)
+  }, [query])
+
+  return matches
+}
+
 function App() {
   const [game, setGame] = useState<GameState | null>(null)
   const [loadError, setLoadError] = useState('')
   const [wins, setWins] = useState(() => Number(localStorage.getItem('garden:wins') ?? '0'))
   const [countedWin, setCountedWin] = useState<string | null>(null)
   const [rulesOpen, setRulesOpen] = useState(false)
+  const usesMobileBoard = useMediaQuery('(max-width: 680px)')
+  const boardMetrics = getBoardMetrics(usesMobileBoard ? MOBILE_BOARD_PADDING : DESKTOP_BOARD_PADDING)
   const marbles = game ? Object.values(game.board) : []
   const selectedMarbles = game
     ? game.selectedIds
@@ -281,7 +306,7 @@ function App() {
       </header>
 
       <section className="board-wrap" aria-label="Puzzle board">
-        <svg className="board" viewBox={`0 0 ${BOARD_WIDTH} ${BOARD_HEIGHT}`} role="img" aria-label="Hexagonal puzzle board">
+        <svg className="board" viewBox={`0 0 ${boardMetrics.width} ${boardMetrics.height}`} role="img" aria-label="Hexagonal puzzle board">
           <defs>
             <linearGradient id="salt-rainbow" x1="0" y1="0" x2="1" y2="1">
               <stop offset="0%" stopColor="#7065f2" />
@@ -294,7 +319,7 @@ function App() {
           </defs>
           <g className="grid">
             {CELLS.map((cell) => {
-              const point = toPoint(cell.q, cell.r)
+              const point = toPoint(cell.q, cell.r, boardMetrics)
               return (
                 <polygon
                   key={cell.key}
@@ -306,7 +331,7 @@ function App() {
           </g>
           <g className="marbles">
             {marbles.map((marble) => {
-              const point = toPoint(marble.cell.q, marble.cell.r)
+              const point = toPoint(marble.cell.q, marble.cell.r, boardMetrics)
               const free = canSelect(game.board, marble, game.metalIndex)
               const selected = game.selectedIds.includes(marble.id)
               const mark = MARBLE_MARKS[marble.type]
