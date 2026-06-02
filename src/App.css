@@ -726,35 +726,47 @@ button:disabled {
   font-weight: 500;
 }
 
-.result {
+.result-backdrop {
   position: fixed;
-  inset: auto 18px 18px;
+  inset: 0;
   z-index: 10;
-  width: min(420px, calc(100vw - 36px));
-  margin: 0 auto;
-  left: 0;
-  right: 0;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 14px;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(25, 25, 25, 0.18);
+  backdrop-filter: blur(2px);
+}
+
+.result {
+  width: min(420px, calc(100vw - 36px));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 22px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.94);
+  background: var(--rules-bg);
   box-shadow: 0 20px 60px rgba(20, 20, 20, 0.16);
-  backdrop-filter: blur(10px);
+  text-align: center;
 }
 
 .result h2 {
   margin: 0;
-  font-size: 18px;
+  color: var(--ink);
+  font-size: 24px;
+  line-height: 1.1;
 }
 
 .result p {
-  margin: 3px 0 0;
+  margin: 0;
   color: var(--muted);
   font-size: 14px;
+}
+
+.result button {
+  margin-top: 6px;
 }
 
 @media (max-width: 680px) {

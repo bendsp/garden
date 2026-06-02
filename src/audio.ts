@@ -160,3 +160,11 @@ export function playMatchSound() {
     { frequency: 820, startOffset: 0.045, duration: 0.08, gain: 0.035 },
   ])
 }
+
+export function playWinSound() {
+  playSound('win', [
+    { frequency: 660, startOffset: 0, duration: 0.08, gain: 0.045 },
+    { frequency: 780, startOffset: 0.09, duration: 0.08, gain: 0.045 },
+    { frequency: 980, startOffset: 0.18, duration: 0.14, gain: 0.04 },
+  ])
+}

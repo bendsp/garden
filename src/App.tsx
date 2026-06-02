@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useState } from 'react'
 import './App.css'
-import { playMatchSound, playSelectSound } from './audio'
+import { playMatchSound, playSelectSound, playWinSound } from './audio'
 import {
   CELLS,
   MARBLE_LABELS,
@@ -512,6 +512,11 @@ function App() {
     }
 
     const nextGame = applyRemoval(game, ids)
+    if (nextGame.finishedAt) {
+      playWinSound()
+    } else {
+      playMatchSound()
+    }
     recordWin(nextGame)
     setGame(nextGame)
   }
@@ -554,7 +559,6 @@ function App() {
     }
 
     if (isSingleMatch(marble.type, game.metalIndex)) {
-      playMatchSound()
       removeMarbles([marble.id])
       return
     }
@@ -588,7 +592,6 @@ function App() {
 
     const first = selectedMarbles[0]
     if (isPairMatch(first.type, marble.type, game.metalIndex)) {
-      playMatchSound()
       removeMarbles([first.id, marble.id])
       return
     }
@@ -754,14 +757,15 @@ function App() {
       </section>
 
       {game.finishedAt && (
-        <section className="result" aria-label="Win result">
-          <div>
-            <h2>Cleared</h2>
-            <p>{formatTime(game.finishedAt - game.startedAt)} · {wins} wins</p>
+        <section className="result-backdrop" aria-label="Win result">
+          <div className="result" role="dialog" aria-modal="true" aria-labelledby="win-title">
+            <h2 id="win-title">You won</h2>
+            <p>Time: {formatTime(game.finishedAt - game.startedAt)}</p>
+            <p>Games won: {wins}</p>
+            <button type="button" onClick={() => void newGame()}>
+              Play again
+            </button>
           </div>
-          <button type="button" onClick={() => void newGame()}>
-            New game
-          </button>
         </section>
       )}
 
