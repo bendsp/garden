@@ -74,19 +74,19 @@ export const MARBLE_LABELS: Record<MarbleType, string> = {
 }
 
 export const MARBLE_MARKS: Record<MarbleType, string> = {
-  air: '',
-  fire: '',
-  water: '',
-  earth: '',
-  salt: '',
+  air: 'C',
+  fire: 'B',
+  water: 'A',
+  earth: 'D',
+  salt: '*',
   vitae: '+',
   mors: '−',
-  quicksilver: '*',
-  lead: '6',
-  tin: '5',
-  iron: '4',
-  copper: '3',
-  silver: '2',
+  quicksilver: 'N',
+  lead: '5',
+  tin: '4',
+  iron: '3',
+  copper: '2',
+  silver: '1',
   gold: '0',
 }
 
