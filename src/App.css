@@ -434,6 +434,10 @@ button:disabled {
   grid-template-columns: repeat(2, 1fr);
 }
 
+.rules-cards.one-up {
+  grid-template-columns: 1fr;
+}
+
 .rules-cards.three-up {
   grid-template-columns: repeat(3, 1fr);
 }
@@ -452,21 +456,41 @@ button:disabled {
   gap: 18px;
 }
 
-.rule-board {
-  display: grid;
-  grid-template-columns: repeat(3, 34px);
-  grid-auto-rows: 29px;
-  justify-content: center;
-  padding: 4px 0 9px;
+.mini-rule-board {
+  display: block;
+  width: min(210px, 100%);
+  height: auto;
+  margin: 0 auto;
+  overflow: visible;
 }
 
-.rule-board.is-edge {
-  justify-content: start;
-  margin-left: -14px;
+.mini-rule-board .grid polygon {
+  stroke-width: 2.4;
 }
 
-.rule-board .rule-hex:nth-child(3n + 2) {
-  transform: translateY(15px);
+.mini-rule-board .marble polygon {
+  stroke-width: 2.2;
+}
+
+.mini-rule-board .marble.is-selected .marble-face {
+  stroke-width: 4.2;
+}
+
+.mini-rule-board .marble text {
+  font-size: 20px;
+}
+
+.mini-board-labels text,
+.mini-off-board text {
+  fill: #4a453f;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.mini-off-board polygon {
+  fill: rgba(255, 255, 255, 0.72);
+  stroke: rgba(25, 25, 25, 0.16);
+  stroke-width: 2;
 }
 
 .rule-hex {
@@ -488,6 +512,12 @@ button:disabled {
 .rule-hex.is-empty {
   color: #4a453f;
   background: #f7f5ed;
+}
+
+.rule-hex.is-off-board {
+  opacity: 0.72;
+  background: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.72) 0 4px, rgba(210, 207, 198, 0.72) 4px 8px);
+  border-color: rgba(25, 25, 25, 0.12);
 }
 
 .rule-hex.is-locked {
@@ -640,6 +670,7 @@ button:disabled {
     gap: 24px;
   }
 
+  .rules-cards.one-up,
   .rules-cards.two-up,
   .rules-cards.three-up {
     grid-template-columns: 1fr;
@@ -662,14 +693,11 @@ button:disabled {
     min-height: auto;
   }
 
-  .rule-board {
-    grid-template-columns: repeat(3, 30px);
-    grid-auto-rows: 26px;
+  .mini-rule-board {
+    width: min(190px, 100%);
   }
 
   .rule-hex {
-    width: 28px;
-    height: 32px;
     font-size: 15px;
   }
 }

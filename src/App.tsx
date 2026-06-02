@@ -106,45 +106,134 @@ function RuleHex({
   mark,
   empty = false,
   locked = false,
+  offBoard = false,
 }: {
   type?: MarbleType
   mark?: string
   empty?: boolean
   locked?: boolean
+  offBoard?: boolean
 }) {
   const label = mark ?? (type ? MARBLE_MARKS[type] : '')
   return (
-    <span className={`rule-hex ${type ? `marble-${type}` : ''} ${empty ? 'is-empty' : ''} ${locked ? 'is-locked' : ''}`}>
+    <span
+      className={`rule-hex ${type ? `marble-${type}` : ''} ${empty ? 'is-empty' : ''} ${
+        locked ? 'is-locked' : ''
+      } ${offBoard ? 'is-off-board' : ''}`}
+    >
       {label && <span>{label}</span>}
     </span>
   )
 }
 
-function RuleBoard({
-  children,
-  edge = false,
-}: {
-  children: Array<MarbleType | 'empty' | 'gap' | 'locked' | 'one' | 'two' | 'three'>
-  edge?: boolean
-}) {
+type RulePosition = 'northWest' | 'northEast' | 'west' | 'center' | 'east' | 'southWest' | 'southEast'
+
+const RULE_POSITIONS: RulePosition[] = ['northWest', 'northEast', 'west', 'center', 'east', 'southWest', 'southEast']
+const MINI_HEX_SIZE = 24
+const MINI_BOARD_WIDTH = MINI_HEX_SIZE * Math.sqrt(3) * 3 + 28
+const MINI_BOARD_HEIGHT = MINI_HEX_SIZE * 3.5 + 28
+const RULE_COORDS: Record<RulePosition, { q: number; r: number }> = {
+  northWest: { q: 0, r: -1 },
+  northEast: { q: 1, r: -1 },
+  west: { q: -1, r: 0 },
+  center: { q: 0, r: 0 },
+  east: { q: 1, r: 0 },
+  southWest: { q: -1, r: 1 },
+  southEast: { q: 0, r: 1 },
+}
+
+type MiniTile = {
+  position: RulePosition
+  type?: MarbleType
+  mark?: string
+  selected?: boolean
+  matchCandidate?: boolean
+  locked?: boolean
+  offBoard?: boolean
+}
+
+function miniPoint(position: RulePosition) {
+  const { q, r } = RULE_COORDS[position]
+  return {
+    x: MINI_BOARD_WIDTH / 2 + MINI_HEX_SIZE * Math.sqrt(3) * (q + r / 2),
+    y: MINI_BOARD_HEIGHT / 2 + MINI_HEX_SIZE * 1.5 * r,
+  }
+}
+
+function MiniRuleBoard({ tiles }: { tiles: MiniTile[] }) {
+  const tileByPosition = new Map(tiles.map((tile) => [tile.position, tile]))
   return (
-    <div className={`rule-board ${edge ? 'is-edge' : ''}`} aria-hidden="true">
-      {children.map((item, index) => {
-        if (item === 'gap') {
-          return <span key={index} />
-        }
-        if (item === 'empty') {
-          return <RuleHex key={index} empty />
-        }
-        if (item === 'locked') {
-          return <RuleHex key={index} type="water" mark="×" locked />
-        }
-        if (item === 'one' || item === 'two' || item === 'three') {
-          return <RuleHex key={index} empty mark={String(['one', 'two', 'three'].indexOf(item) + 1)} />
-        }
-        return <RuleHex key={index} type={item} />
-      })}
-    </div>
+    <svg className="mini-rule-board" viewBox={`0 0 ${MINI_BOARD_WIDTH} ${MINI_BOARD_HEIGHT}`} aria-hidden="true">
+      <g className="grid">
+        {RULE_POSITIONS.map((position) => {
+          const point = miniPoint(position)
+          return (
+            <polygon
+              key={position}
+              points={hexPoints(MINI_HEX_SIZE - 2)}
+              transform={`translate(${point.x} ${point.y})`}
+            />
+          )
+        })}
+      </g>
+      <g className="mini-off-board-markers">
+        {tiles
+          .filter((tile) => tile.offBoard)
+          .map((tile) => {
+            const point = miniPoint(tile.position)
+            return (
+              <g key={`${tile.position}-off`} className="mini-off-board" transform={`translate(${point.x} ${point.y})`}>
+                <polygon points={hexPoints(MINI_HEX_SIZE - 1)} />
+                {tile.mark && (
+                  <text aria-hidden="true" textAnchor="middle" dominantBaseline="central">
+                    {tile.mark}
+                  </text>
+                )}
+              </g>
+            )
+          })}
+      </g>
+      <g className="marbles">
+        {RULE_POSITIONS.map((position) => {
+          const tile = tileByPosition.get(position)
+          if (!tile?.type) {
+            return null
+          }
+
+          const point = miniPoint(position)
+          const mark = tile.mark ?? MARBLE_MARKS[tile.type]
+          return (
+            <g
+              key={position}
+              className={`marble marble-${tile.type} is-free ${tile.selected ? 'is-selected' : ''} ${
+                tile.matchCandidate ? 'is-match-candidate' : ''
+              } ${tile.locked ? 'is-locked' : ''}`}
+              transform={`translate(${point.x} ${point.y})`}
+            >
+              {tile.matchCandidate && <polygon className="match-pulse" points={hexPoints(MINI_HEX_SIZE - 1)} />}
+              <polygon className="marble-face" points={hexPoints(MINI_HEX_SIZE - 5)} />
+              {mark && (
+                <text aria-hidden="true" textAnchor="middle" dominantBaseline="central">
+                  {mark}
+                </text>
+              )}
+            </g>
+          )
+        })}
+      </g>
+      <g className="mini-board-labels">
+        {tiles
+          .filter((tile) => tile.mark && !tile.type && !tile.offBoard)
+          .map((tile) => {
+            const point = miniPoint(tile.position)
+            return (
+              <text key={`${tile.position}-mark`} x={point.x} y={point.y} textAnchor="middle" dominantBaseline="central">
+                {tile.mark}
+              </text>
+            )
+          })}
+      </g>
+    </svg>
   )
 }
 
@@ -178,12 +267,14 @@ function RulesModal({ onClose }: { onClose: () => void }) {
         <div className="rules-top">
           <section className="rules-block">
             <h2 id="rules-title">Clearing Marbles</h2>
-            <div className="rules-cards two-up">
+            <div className="rules-cards one-up">
               <article>
-                <RuleBoard>{['empty', 'empty', 'empty', 'empty', 'fire', 'fire', 'empty', 'empty', 'empty']}</RuleBoard>
-              </article>
-              <article>
-                <RuleBoard>{['empty', 'empty', 'empty', 'empty', 'fire', 'fire', 'empty', 'empty', 'empty']}</RuleBoard>
+                <MiniRuleBoard
+                  tiles={[
+                    { position: 'center', type: 'fire', selected: true },
+                    { position: 'east', type: 'fire', matchCandidate: true },
+                  ]}
+                />
               </article>
             </div>
             <p>Your goal is to clear the board.</p>
@@ -194,13 +285,42 @@ function RulesModal({ onClose }: { onClose: () => void }) {
             <h2>Unlocking Marbles</h2>
             <div className="rules-cards three-up">
               <article>
-                <RuleBoard>{['empty', 'salt', 'empty', 'salt', 'locked', 'salt', 'empty', 'salt', 'empty']}</RuleBoard>
+                <MiniRuleBoard
+                  tiles={[
+                    { position: 'northWest', type: 'salt' },
+                    { position: 'northEast', type: 'salt' },
+                    { position: 'west', type: 'salt' },
+                    { position: 'center', type: 'water', mark: '×', locked: true },
+                    { position: 'east', type: 'salt' },
+                    { position: 'southWest', type: 'salt' },
+                    { position: 'southEast', type: 'salt' },
+                  ]}
+                />
               </article>
               <article>
-                <RuleBoard>{['empty', 'salt', 'one', 'salt', 'water', 'two', 'empty', 'salt', 'three']}</RuleBoard>
+                <MiniRuleBoard
+                  tiles={[
+                    { position: 'northWest', type: 'salt' },
+                    { position: 'northEast', mark: '1' },
+                    { position: 'west', type: 'salt' },
+                    { position: 'center', type: 'water' },
+                    { position: 'east', mark: '2' },
+                    { position: 'southWest', type: 'salt' },
+                    { position: 'southEast', mark: '3' },
+                  ]}
+                />
               </article>
               <article>
-                <RuleBoard edge>{['one', 'salt', 'empty', 'water', 'salt', 'empty', 'two', 'gap', 'three']}</RuleBoard>
+                <MiniRuleBoard
+                  tiles={[
+                    { position: 'northWest', mark: '1', offBoard: true },
+                    { position: 'northEast', type: 'salt' },
+                    { position: 'west', mark: '2', offBoard: true },
+                    { position: 'center', type: 'water' },
+                    { position: 'east', type: 'salt' },
+                    { position: 'southWest', mark: '3', offBoard: true },
+                  ]}
+                />
               </article>
             </div>
             <div className="rules-caption-grid">
