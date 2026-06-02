@@ -63,8 +63,7 @@ button:hover:not(:disabled) {
   border-color: #bbb4aa;
 }
 
-button:focus-visible,
-.marble:focus-visible {
+button:focus-visible {
   outline: 3px solid #111;
   outline-offset: 3px;
 }
@@ -113,6 +112,10 @@ button:disabled {
   box-shadow: var(--shadow);
   padding: clamp(6px, 2vw, 18px);
   touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
 }
 
 .board {
@@ -120,6 +123,8 @@ button:disabled {
   width: 100%;
   height: auto;
   max-height: min(72svh, 760px);
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .grid polygon {
@@ -130,6 +135,9 @@ button:disabled {
 
 .marble {
   cursor: pointer;
+  outline: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .marble polygon {
@@ -147,6 +155,13 @@ button:disabled {
   font-size: 25px;
   font-weight: 850;
   font-family: var(--font-main);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.marble:focus-visible polygon {
+  stroke: #111;
+  stroke-width: 4;
 }
 
 .marble.is-locked {
@@ -263,6 +278,8 @@ button:disabled {
   display: grid;
   grid-template-columns: repeat(14, minmax(0, 1fr));
   gap: 6px;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .token {
@@ -274,6 +291,8 @@ button:disabled {
   justify-content: center;
   gap: 4px;
   color: #fff;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .token span,
