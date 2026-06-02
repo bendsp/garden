@@ -54,14 +54,14 @@ Canonical counts:
 1 Gold
 ```
 
-This implementation renders these as flat colored hexagons. Cardinal elements and salt are color-only, vitae/mors use `+` and `−`, and quicksilver uses a filled circle:
+This implementation renders these as flat colored hexagons. Cardinal elements are color-only, salt uses a rainbow gradient to indicate its wildcard role, vitae/mors use `+` and `−`, and quicksilver uses a filled circle:
 
 ```text
 Red    Fire
 Yellow Air
 Green  Earth
 Blue   Water
-Gray   Salt
+Rainbow Salt
 Circle Quicksilver
 ```
 

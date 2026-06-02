@@ -295,6 +295,16 @@ function App() {
 
       <section className="board-wrap" aria-label="Puzzle board">
         <svg className="board" viewBox={`0 0 ${BOARD_WIDTH} ${BOARD_HEIGHT}`} role="img" aria-label="Hexagonal puzzle board">
+          <defs>
+            <linearGradient id="salt-rainbow" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#7065f2" />
+              <stop offset="22%" stopColor="#d94fa1" />
+              <stop offset="40%" stopColor="#ec5b43" />
+              <stop offset="58%" stopColor="#efcf58" />
+              <stop offset="76%" stopColor="#55c77d" />
+              <stop offset="100%" stopColor="#4d9ce8" />
+            </linearGradient>
+          </defs>
           <g className="grid">
             {CELLS.map((cell) => {
               const point = toPoint(cell.q, cell.r)

@@ -13,6 +13,7 @@
   --purple-3: #835bdd;
   --purple-4: #8f69e7;
   --purple-5: #9b78ef;
+  --salt-rainbow: linear-gradient(135deg, #7065f2 0%, #d94fa1 22%, #ec5b43 40%, #efcf58 58%, #55c77d 76%, #4d9ce8 100%);
   --shadow: 0 14px 40px rgba(20, 20, 20, 0.08);
 }
 
@@ -172,10 +173,12 @@ button:disabled {
   fill: #ffffff;
 }
 
-.marble-salt polygon,
+.marble-salt polygon {
+  fill: url("#salt-rainbow");
+}
+
 .token.marble-salt {
-  fill: #b7ae9a;
-  background: #b7ae9a;
+  background: var(--salt-rainbow);
 }
 
 .marble-air polygon,
