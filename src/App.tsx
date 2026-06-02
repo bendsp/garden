@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import './App.css'
 import { playMatchSound, playSelectSound } from './audio'
 import {
@@ -344,29 +344,34 @@ function RulesModal({ onClose }: { onClose: () => void }) {
                 ))}
                 <MatchPair types={['salt', 'salt']} />
               </div>
-              <p>Rainbow matches with any primary color, or with itself.</p>
+              <p>Rainbow matches with any primary color or with itself.</p>
             </article>
 
             <article>
               <div className="combo-row">
                 <MatchPair types={['vitae', 'mors']} />
               </div>
-              <p>+ and − only match with each other.</p>
+              <p>
+                <strong className="inline-symbol">+</strong> and <strong className="inline-symbol">−</strong> only
+                match with each other.
+              </p>
             </article>
 
             <article>
               <div className="metal-chain" aria-hidden="true">
                 {metalTypes.map((type) => (
-                  <span key={type} className="metal-step">
-                    <RuleHex type={type} />
-                    <span>+</span>
-                    <RuleHex type="quicksilver" />
-                  </span>
+                  <Fragment key={type}>
+                    <span className="metal-step">
+                      <RuleHex type={type} />
+                      <span>+</span>
+                      <RuleHex type="quicksilver" />
+                    </span>
+                    <span className="chain-arrow">&gt;</span>
+                  </Fragment>
                 ))}
-                <span className="chain-arrow">›</span>
                 <RuleHex type="gold" />
               </div>
-              <p>The purples match with dot (●), but only in order. 0 clears alone.</p>
+              <p>The purple numbers match with ●, but only in descending order. 0 clears alone.</p>
             </article>
           </div>
         </section>

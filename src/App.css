@@ -618,6 +618,11 @@ button:disabled {
   font-weight: 700;
 }
 
+.inline-symbol {
+  color: #292521;
+  font-weight: 850;
+}
+
 .result {
   position: fixed;
   inset: auto 18px 18px;
