@@ -352,8 +352,7 @@ function RulesModal({ onClose }: { onClose: () => void }) {
                 <MatchPair types={['vitae', 'mors']} />
               </div>
               <p>
-                <strong className="inline-symbol">+</strong> and <strong className="inline-symbol">−</strong> only
-                match with each other.
+                <strong>+</strong> and <strong>−</strong> only match with each other.
               </p>
             </article>
 
@@ -371,7 +370,9 @@ function RulesModal({ onClose }: { onClose: () => void }) {
                 ))}
                 <RuleHex type="gold" />
               </div>
-              <p>The purple numbers match with ●, but only in descending order. 0 clears alone.</p>
+              <p>
+                The purple numbers match with ● in descending order. <strong>0</strong> clears alone.
+              </p>
             </article>
           </div>
         </section>

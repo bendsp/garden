@@ -614,13 +614,8 @@ button:disabled {
 
 .chain-arrow {
   color: #292521;
-  font-size: 24px;
-  font-weight: 700;
-}
-
-.inline-symbol {
-  color: #292521;
-  font-weight: 850;
+  font-size: 19px;
+  font-weight: 500;
 }
 
 .result {
