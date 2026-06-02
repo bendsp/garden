@@ -5,6 +5,7 @@ import {
   CELLS,
   MARBLE_LABELS,
   MARBLE_MARKS,
+  METAL_ORDER,
   type GameState,
   type Marble,
   type MarbleType,
@@ -23,14 +24,12 @@ const HEX_HEIGHT = 2 * HEX_SIZE
 const DESKTOP_BOARD_PADDING = 44
 const MOBILE_BOARD_PADDING = 4
 
-const COLOR_GUIDE_TYPES: MarbleType[] = [
+const INVENTORY_GUIDE_TYPES: MarbleType[] = [
   'salt',
   'fire',
   'air',
   'earth',
   'water',
-]
-const POLARITY_GUIDE_TYPES: MarbleType[] = [
   'vitae',
   'mors',
 ]
@@ -128,11 +127,21 @@ function RuleHex({
   )
 }
 
-function GuideToken({ type, count }: { type: MarbleType; count: number }) {
+function GuideToken({
+  type,
+  count,
+  showCount = true,
+  state,
+}: {
+  type: MarbleType
+  count: number
+  showCount?: boolean
+  state?: 'completed' | 'current' | 'future'
+}) {
   const mark = MARBLE_MARKS[type]
   return (
     <svg
-      className={`token marble-${type}`}
+      className={`token marble-${type} ${state ? `is-${state}` : ''}`}
       viewBox="-24 -24 48 48"
       role="img"
       aria-label={`${count} ${MARBLE_LABELS[type]} remaining`}
@@ -143,9 +152,14 @@ function GuideToken({ type, count }: { type: MarbleType; count: number }) {
           {mark}
         </text>
       )}
-      <text className="token-count" x="15" y="-12" textAnchor="middle" dominantBaseline="central">
-        {count}
-      </text>
+      {showCount && (
+        <g className="token-count-badge">
+          <circle cx="15" cy="-13" r="7.5" />
+          <text className="token-count" x="15" y="-13" textAnchor="middle" dominantBaseline="central">
+            {count}
+          </text>
+        </g>
+      )}
     </svg>
   )
 }
@@ -604,6 +618,13 @@ function App() {
   }
 
   const currentPurple = getUnlockedMetal(game.metalIndex)
+  const purpleStateFor = (index: number) => {
+    if (index < game.metalIndex) {
+      return 'completed' as const
+    }
+
+    return METAL_ORDER[index] === currentPurple ? 'current' as const : 'future' as const
+  }
 
   return (
     <main className="app">
@@ -710,21 +731,19 @@ function App() {
       </section>
 
       <section className="tray" aria-label="Remaining tiles">
-        <div className="tray-group">
-          {COLOR_GUIDE_TYPES.map((type) => (
+        <div className="tray-row" aria-label="General matching inventory">
+          {INVENTORY_GUIDE_TYPES.map((type) => (
             <GuideToken key={type} type={type} count={countFor(type)} />
           ))}
         </div>
-        <div className="tray-separator" aria-hidden="true" />
-        <div className="tray-group">
-          {POLARITY_GUIDE_TYPES.map((type) => (
-            <GuideToken key={type} type={type} count={countFor(type)} />
-          ))}
-        </div>
-        <div className="tray-separator" aria-hidden="true" />
-        <div className="tray-group">
+        <div className="tray-row purple-track" aria-label="Purple progression">
           <GuideToken type="quicksilver" count={countFor('quicksilver')} />
-          <GuideToken type={currentPurple} count={countFor(currentPurple)} />
+          {METAL_ORDER.map((type, index) => (
+            <Fragment key={type}>
+              <GuideToken type={type} count={countFor(type)} showCount={false} state={purpleStateFor(index)} />
+              {index < METAL_ORDER.length - 1 && <span className="tray-arrow" aria-hidden="true">&gt;</span>}
+            </Fragment>
+          ))}
         </div>
       </section>
 
