@@ -7,6 +7,12 @@
   --hole: #f0eee8;
   --hole-stroke: #d8d2c7;
   --purple: #7651d1;
+  --purple-0: #6740ba;
+  --purple-1: #7048c6;
+  --purple-2: #7950d1;
+  --purple-3: #835bdd;
+  --purple-4: #8f69e7;
+  --purple-5: #9b78ef;
   --shadow: 0 14px 40px rgba(20, 20, 20, 0.08);
 }
 
@@ -174,8 +180,8 @@ button:disabled {
 
 .marble-air polygon,
 .token.marble-air {
-  fill: #76aee8;
-  background: #76aee8;
+  fill: #f0ca4d;
+  background: #f0ca4d;
 }
 
 .marble-fire polygon,
@@ -186,8 +192,8 @@ button:disabled {
 
 .marble-water polygon,
 .token.marble-water {
-  fill: #21a8a2;
-  background: #21a8a2;
+  fill: #4d9ce8;
+  background: #4d9ce8;
 }
 
 .marble-earth polygon,
@@ -216,38 +222,38 @@ button:disabled {
 
 .marble-lead polygon,
 .token.marble-lead {
-  fill: var(--purple);
-  background: var(--purple);
+  fill: var(--purple-5);
+  background: var(--purple-5);
 }
 
 .marble-tin polygon,
 .token.marble-tin {
-  fill: var(--purple);
-  background: var(--purple);
+  fill: var(--purple-4);
+  background: var(--purple-4);
 }
 
 .marble-iron polygon,
 .token.marble-iron {
-  fill: var(--purple);
-  background: var(--purple);
+  fill: var(--purple-3);
+  background: var(--purple-3);
 }
 
 .marble-copper polygon,
 .token.marble-copper {
-  fill: var(--purple);
-  background: var(--purple);
+  fill: var(--purple-2);
+  background: var(--purple-2);
 }
 
 .marble-silver polygon,
 .token.marble-silver {
-  fill: var(--purple);
-  background: var(--purple);
+  fill: var(--purple-1);
+  background: var(--purple-1);
 }
 
 .marble-gold polygon,
 .token.marble-gold {
-  fill: var(--purple);
-  background: var(--purple);
+  fill: var(--purple-0);
+  background: var(--purple-0);
 }
 
 .tray {

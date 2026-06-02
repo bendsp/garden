@@ -27,10 +27,10 @@ const BOARD_HEIGHT = HEX_HEIGHT * 8.5 + BOARD_PADDING * 2
 
 const TYPE_ORDER: MarbleType[] = [
   'salt',
-  'air',
   'fire',
-  'water',
+  'air',
   'earth',
+  'water',
   'vitae',
   'mors',
   'lead',

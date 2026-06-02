@@ -54,13 +54,15 @@ Canonical counts:
 1 Gold
 ```
 
-This implementation renders these as flat colored hexagons. Salt uses `*`, quicksilver uses `N`, vitae/mors use `+` and `−`, and the cardinal elements use letters:
+This implementation renders these as flat colored hexagons. Cardinal elements and salt are color-only, vitae/mors use `+` and `−`, and quicksilver uses a filled circle:
 
 ```text
-A Water
-B Fire
-C Air
-D Earth
+Red    Fire
+Yellow Air
+Green  Earth
+Blue   Water
+Gray   Salt
+Circle Quicksilver
 ```
 
 Metals count down from the first merge to the final gold clear:

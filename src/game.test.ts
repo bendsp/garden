@@ -79,13 +79,13 @@ describe('garden rules', () => {
     expect(isPairMatch('tin', 'quicksilver', 1)).toBe(true)
   })
 
-  it('uses element letters, universal salt, null quicksilver, and countdown metal labels', () => {
-    expect(MARBLE_MARKS.water).toBe('A')
-    expect(MARBLE_MARKS.fire).toBe('B')
-    expect(MARBLE_MARKS.air).toBe('C')
-    expect(MARBLE_MARKS.earth).toBe('D')
-    expect(MARBLE_MARKS.salt).toBe('*')
-    expect(MARBLE_MARKS.quicksilver).toBe('N')
+  it('uses color-only elements and salt, circle quicksilver, and countdown metal labels', () => {
+    expect(MARBLE_MARKS.fire).toBe('')
+    expect(MARBLE_MARKS.air).toBe('')
+    expect(MARBLE_MARKS.earth).toBe('')
+    expect(MARBLE_MARKS.water).toBe('')
+    expect(MARBLE_MARKS.salt).toBe('')
+    expect(MARBLE_MARKS.quicksilver).toBe('●')
     expect(MARBLE_MARKS.lead).toBe('5')
     expect(MARBLE_MARKS.silver).toBe('1')
     expect(MARBLE_MARKS.gold).toBe('0')
