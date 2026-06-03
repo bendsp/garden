@@ -457,6 +457,7 @@ function App() {
   const [wins, setWins] = useState(() => Number(localStorage.getItem('garden:wins') ?? '0'))
   const [countedWin, setCountedWin] = useState<string | null>(null)
   const [rulesOpen, setRulesOpen] = useState(false)
+  const [lossOpen, setLossOpen] = useState(false)
   const levelsBufferRef = useRef<ArrayBuffer | null>(null)
   const nextGameRef = useRef<GameState | null>(null)
   const usesMobileBoard = useMediaQuery('(max-width: 680px)')
@@ -472,6 +473,9 @@ function App() {
     countsByType.set(marble.type, (countsByType.get(marble.type) ?? 0) + 1)
   }
   const countFor = (type: MarbleType) => countsByType.get(type) ?? 0
+  const hasNoLegalMoves = game
+    ? !game.finishedAt && marbles.length > 0 && legalMoves(game.board, game.metalIndex).length === 0
+    : false
 
   const primeNextGame = useCallback((buffer: ArrayBuffer) => {
     nextGameRef.current = makeGame(buffer)
@@ -501,6 +505,7 @@ function App() {
       const preparedGame = nextGameRef.current ?? makeGame(buffer)
       nextGameRef.current = null
       setGame(activateGame(preparedGame))
+      setLossOpen(false)
       scheduleNextGame(buffer)
       setCountedWin(null)
       setLoadError('')
@@ -547,6 +552,19 @@ function App() {
     return () => document.removeEventListener('keydown', closeOnEscape)
   }, [rulesOpen])
 
+  useEffect(() => {
+    if (!hasNoLegalMoves) {
+      return undefined
+    }
+
+    const timeout = window.setTimeout(() => {
+      setLossOpen(true)
+      playLossSound()
+    }, 1000)
+
+    return () => window.clearTimeout(timeout)
+  }, [hasNoLegalMoves])
+
   function recordWin(nextGame: GameState) {
     if (!nextGame.finishedAt) {
       return
@@ -573,10 +591,9 @@ function App() {
     const nextGame = applyRemoval(game, ids)
     if (nextGame.finishedAt) {
       playWinSound()
-    } else if (legalMoves(nextGame.board, nextGame.metalIndex).length === 0) {
-      playLossSound()
-    } else {
+    } else if (legalMoves(nextGame.board, nextGame.metalIndex).length > 0) {
       playMatchSound()
+      setLossOpen(false)
     }
     recordWin(nextGame)
     setGame(nextGame)
@@ -684,7 +701,6 @@ function App() {
   }
 
   const currentPurple = getUnlockedMetal(game.metalIndex)
-  const hasNoLegalMoves = !game.finishedAt && marbles.length > 0 && legalMoves(game.board, game.metalIndex).length === 0
   const purpleStateFor = (index: number) => {
     if (index < game.metalIndex) {
       return 'completed' as const
@@ -708,7 +724,10 @@ function App() {
           </button>
           <button
             type="button"
-            onClick={() => setGame((current) => (current ? undoGame(current) : current))}
+            onClick={() => {
+              setLossOpen(false)
+              setGame((current) => (current ? undoGame(current) : current))
+            }}
             disabled={!game.history.length}
           >
             Undo
@@ -834,7 +853,7 @@ function App() {
         </section>
       )}
 
-      {hasNoLegalMoves && (
+      {lossOpen && (
         <section className="result-backdrop" aria-label="Loss result">
           <div className="result" role="dialog" aria-modal="true" aria-labelledby="loss-title">
             <h2 id="loss-title">No moves left</h2>
@@ -842,7 +861,10 @@ function App() {
             <div className="result-actions">
               <button
                 type="button"
-                onClick={() => setGame((current) => (current ? undoGame(current) : current))}
+                onClick={() => {
+                  setLossOpen(false)
+                  setGame((current) => (current ? undoGame(current) : current))
+                }}
                 disabled={!game.history.length}
               >
                 Undo
