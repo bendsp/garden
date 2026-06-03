@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
 import './App.css'
 import { playMatchSound, playSelectSound, playWinSound } from './audio'
 import {
@@ -33,6 +33,9 @@ const INVENTORY_GUIDE_TYPES: MarbleType[] = [
   'vitae',
   'mors',
 ]
+
+let cachedLevelsBuffer: ArrayBuffer | null = null
+let levelsBufferRequest: Promise<ArrayBuffer> | null = null
 
 function getBoardMetrics(padding: number) {
   return {
@@ -76,6 +79,43 @@ function formatTime(ms: number) {
   const minutes = Math.floor(totalSeconds / 60)
   const seconds = totalSeconds % 60
   return `${minutes}:${String(seconds).padStart(2, '0')}`
+}
+
+function makeGame(buffer: ArrayBuffer) {
+  return parseLevelsDat(buffer, Math.floor(Math.random() * 2 ** 32))
+}
+
+function activateGame(nextGame: GameState) {
+  return {
+    ...nextGame,
+    selectedIds: [],
+    history: [],
+    startedAt: Date.now(),
+  }
+}
+
+async function fetchLevelsBuffer() {
+  if (cachedLevelsBuffer) {
+    return cachedLevelsBuffer
+  }
+
+  levelsBufferRequest ??= fetch('/boards/levels.dat', { cache: 'no-store' })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('Could not load level data.')
+      }
+      return response.arrayBuffer()
+    })
+    .then((buffer) => {
+      cachedLevelsBuffer = buffer
+      return buffer
+    })
+    .catch((error) => {
+      levelsBufferRequest = null
+      throw error
+    })
+
+  return levelsBufferRequest
 }
 
 function useMediaQuery(query: string) {
@@ -416,6 +456,8 @@ function App() {
   const [wins, setWins] = useState(() => Number(localStorage.getItem('garden:wins') ?? '0'))
   const [countedWin, setCountedWin] = useState<string | null>(null)
   const [rulesOpen, setRulesOpen] = useState(false)
+  const levelsBufferRef = useRef<ArrayBuffer | null>(null)
+  const nextGameRef = useRef<GameState | null>(null)
   const usesMobileBoard = useMediaQuery('(max-width: 680px)')
   const boardMetrics = getBoardMetrics(usesMobileBoard ? MOBILE_BOARD_PADDING : DESKTOP_BOARD_PADDING)
   const marbles = game ? Object.values(game.board) : []
@@ -430,15 +472,35 @@ function App() {
   }
   const countFor = (type: MarbleType) => countsByType.get(type) ?? 0
 
-  async function newGame() {
-    const seed = Math.floor(Math.random() * 2 ** 32)
-    try {
-      const response = await fetch('/boards/levels.dat', { cache: 'no-store' })
-      if (!response.ok) {
-        throw new Error('Could not load level data.')
+  const primeNextGame = useCallback((buffer: ArrayBuffer) => {
+    nextGameRef.current = makeGame(buffer)
+  }, [])
+
+  const scheduleNextGame = useCallback((buffer: ArrayBuffer) => {
+    window.setTimeout(() => {
+      if (!nextGameRef.current) {
+        primeNextGame(buffer)
       }
-      const buffer = await response.arrayBuffer()
-      setGame(parseLevelsDat(buffer, seed))
+    }, 0)
+  }, [primeNextGame])
+
+  const loadLevelsBuffer = useCallback(async () => {
+    if (levelsBufferRef.current) {
+      return levelsBufferRef.current
+    }
+
+    const buffer = await fetchLevelsBuffer()
+    levelsBufferRef.current = buffer
+    return buffer
+  }, [])
+
+  async function newGame() {
+    try {
+      const buffer = await loadLevelsBuffer()
+      const preparedGame = nextGameRef.current ?? makeGame(buffer)
+      nextGameRef.current = null
+      setGame(activateGame(preparedGame))
+      scheduleNextGame(buffer)
       setCountedWin(null)
       setLoadError('')
     } catch (error) {
@@ -448,17 +510,13 @@ function App() {
 
   useEffect(() => {
     let cancelled = false
-    const seed = Math.floor(Math.random() * 2 ** 32)
-    fetch('/boards/levels.dat', { cache: 'no-store' })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Could not load level data.')
-        }
-        return response.arrayBuffer()
-      })
+
+    loadLevelsBuffer()
       .then((buffer) => {
         if (!cancelled) {
-          setGame(parseLevelsDat(buffer, seed))
+          const initialGame = makeGame(buffer)
+          setGame(activateGame(initialGame))
+          scheduleNextGame(buffer)
           setLoadError('')
         }
       })
@@ -471,7 +529,7 @@ function App() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [loadLevelsBuffer, scheduleNextGame])
 
   useEffect(() => {
     if (!rulesOpen) {
