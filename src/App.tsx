@@ -371,19 +371,19 @@ function MiniRuleBoard({
   )
 }
 
-function ColorMatchDemoBoard() {
+function MatchingDemoBoard({
+  pairs,
+  className = '',
+}: {
+  pairs: Array<{ className: string; types: [MarbleType, MarbleType] }>
+  className?: string
+}) {
   const westPoint = miniPoint('west')
   const eastPoint = miniPoint('east')
-  const pairs: Array<{ className: string; types: [MarbleType, MarbleType] }> = [
-    { className: 'is-red-pair', types: ['fire', 'fire'] },
-    { className: 'is-blue-pair', types: ['water', 'water'] },
-    { className: 'is-green-rainbow-pair', types: ['earth', 'salt'] },
-    { className: 'is-rainbow-pair', types: ['salt', 'salt'] },
-  ]
 
   return (
     <svg
-      className="mini-rule-board color-match-demo-board"
+      className={`mini-rule-board match-demo-board ${className}`}
       viewBox={`0 0 ${MINI_BOARD_WIDTH} ${MINI_BOARD_HEIGHT}`}
       aria-hidden="true"
       style={{
@@ -407,9 +407,9 @@ function ColorMatchDemoBoard() {
           )
         })}
       </g>
-      <g className="color-match-pairs">
+      <g className="match-demo-pairs">
         {pairs.map((pair) => (
-          <g key={pair.className} className={`color-match-pair ${pair.className}`}>
+          <g key={pair.className} className={`match-demo-pair ${pair.className}`}>
             {(['west', 'east'] as const).map((position, index) => {
               const point = miniPoint(position)
               const type = pair.types[index]
@@ -442,13 +442,23 @@ function ColorMatchDemoBoard() {
   )
 }
 
-function MatchPair({ types }: { types: [MarbleType, MarbleType] }) {
+function ColorMatchDemoBoard() {
+  const pairs: Array<{ className: string; types: [MarbleType, MarbleType] }> = [
+    { className: 'is-red-pair', types: ['fire', 'fire'] },
+    { className: 'is-blue-pair', types: ['water', 'water'] },
+    { className: 'is-green-rainbow-pair', types: ['earth', 'salt'] },
+    { className: 'is-rainbow-pair', types: ['salt', 'salt'] },
+  ]
+
+  return <MatchingDemoBoard pairs={pairs} className="color-match-demo-board" />
+}
+
+function PolarityMatchDemoBoard() {
   return (
-    <span className="match-pair">
-      <RuleHex type={types[0]} />
-      <span>+</span>
-      <RuleHex type={types[1]} />
-    </span>
+    <MatchingDemoBoard
+      pairs={[{ className: 'is-polarity-pair', types: ['vitae', 'mors'] }]}
+      className="polarity-match-demo-board"
+    />
   )
 }
 
@@ -611,9 +621,9 @@ function RulesModal({ onClose }: { onClose: () => void }) {
               </div>
             </article>
 
-            <article>
-              <div className="combo-row">
-                <MatchPair types={['vitae', 'mors']} />
+            <article className="polarity-match-demo">
+              <div className="color-match-frame">
+                <PolarityMatchDemoBoard />
               </div>
               <p>+ and − only match with each other.</p>
             </article>

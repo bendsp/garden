@@ -817,16 +817,17 @@ button:disabled {
   margin-bottom: 12px;
 }
 
-.color-match-demo-board {
+.match-demo-board {
   width: min(210px, 100%);
 }
 
-.color-match-pair {
+.match-demo-pair {
   opacity: 0;
 }
 
-.color-match-pair .marble {
+.match-demo-pair .marble {
   opacity: 1;
+  animation: match-demo-remove 2.2s infinite;
 }
 
 .color-match-demo-board .is-red-pair {
@@ -845,19 +846,23 @@ button:disabled {
   animation: color-match-pair-four 8.8s infinite;
 }
 
-.color-match-demo-board .is-demo-selected .marble-face {
+.polarity-match-demo-board .is-polarity-pair {
+  animation: polarity-match-pair 2.2s infinite;
+}
+
+.match-demo-board .is-demo-selected .marble-face {
   animation: color-match-selected 2.2s infinite;
 }
 
-.color-match-demo-board .is-demo-target .marble-face {
+.match-demo-board .is-demo-target .marble-face {
   animation: color-match-target 2.2s infinite;
 }
 
-.color-match-demo-board .match-pulse {
+.match-demo-board .match-pulse {
   animation: color-match-candidate 2.2s infinite;
 }
 
-.color-match-demo-board .demo-cursor {
+.match-demo-board .demo-cursor {
   animation: color-match-cursor 2.2s infinite;
 }
 
@@ -1181,6 +1186,18 @@ button:disabled {
   }
 }
 
+@keyframes polarity-match-pair {
+  0%,
+  98% {
+    opacity: 1;
+  }
+
+  99%,
+  100% {
+    opacity: 0;
+  }
+}
+
 @keyframes color-match-cursor {
   0%,
   8% {
@@ -1225,6 +1242,23 @@ button:disabled {
   100% {
     opacity: 0;
     transform: translate(var(--cursor-second-x), var(--cursor-second-y)) scale(1);
+  }
+}
+
+@keyframes match-demo-remove {
+  0%,
+  70% {
+    opacity: 1;
+  }
+
+  78%,
+  88% {
+    opacity: 0;
+  }
+
+  96%,
+  100% {
+    opacity: 1;
   }
 }
 
@@ -1394,7 +1428,7 @@ button:disabled {
 
 .combination-grid {
   display: grid;
-  grid-template-columns: 2.4fr 0.75fr 1.6fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
   align-items: start;
 }
