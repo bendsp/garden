@@ -753,19 +753,19 @@ button:disabled {
 }
 
 .mini-rule-board.is-clearing-demo .marble {
-  animation: clearing-demo-remove 4.6s infinite;
+  animation: clearing-demo-remove 4s infinite;
 }
 
 .mini-rule-board.is-clearing-demo .position-west .marble-face {
-  animation: clearing-demo-select 4.6s infinite;
+  animation: clearing-demo-select 4s infinite;
 }
 
 .mini-rule-board.is-clearing-demo .position-east .match-pulse {
-  animation: clearing-demo-candidate 4.6s infinite;
+  animation: clearing-demo-candidate 4s infinite;
 }
 
 .mini-rule-board.is-clearing-demo .position-east .marble-face {
-  animation: clearing-demo-ready 4.6s infinite;
+  animation: clearing-demo-ready 4s infinite;
 }
 
 .mini-rule-board.is-unlocking-demo .position-northEast,
@@ -795,7 +795,7 @@ button:disabled {
   filter: drop-shadow(0 2px 2px rgba(25, 25, 25, 0.28));
   pointer-events: none;
   transform: translate(var(--cursor-start-x), var(--cursor-start-y));
-  animation: clearing-demo-cursor 4.6s infinite;
+  animation: clearing-demo-cursor 4s infinite;
 }
 
 .demo-cursor path {
@@ -827,43 +827,43 @@ button:disabled {
 
 .match-demo-pair .marble {
   opacity: 1;
-  animation: clearing-demo-remove 4.6s infinite;
+  animation: clearing-demo-remove 4s infinite;
 }
 
 .color-match-demo-board .is-red-pair {
-  animation: color-match-pair-one 18.4s infinite;
+  animation: color-match-pair-one 16s infinite;
 }
 
 .color-match-demo-board .is-blue-pair {
-  animation: color-match-pair-two 18.4s infinite;
+  animation: color-match-pair-two 16s infinite;
 }
 
 .color-match-demo-board .is-green-rainbow-pair {
-  animation: color-match-pair-three 18.4s infinite;
+  animation: color-match-pair-three 16s infinite;
 }
 
 .color-match-demo-board .is-rainbow-pair {
-  animation: color-match-pair-four 18.4s infinite;
+  animation: color-match-pair-four 16s infinite;
 }
 
 .polarity-match-demo-board .is-polarity-pair {
-  animation: polarity-match-pair 4.6s infinite;
+  animation: polarity-match-pair 4s infinite;
 }
 
 .match-demo-board .is-demo-selected .marble-face {
-  animation: clearing-demo-select 4.6s infinite;
+  animation: clearing-demo-select 4s infinite;
 }
 
 .match-demo-board .is-demo-target .marble-face {
-  animation: clearing-demo-ready 4.6s infinite;
+  animation: clearing-demo-ready 4s infinite;
 }
 
 .match-demo-board .match-pulse {
-  animation: clearing-demo-candidate 4.6s infinite;
+  animation: clearing-demo-candidate 4s infinite;
 }
 
 .match-demo-board .demo-cursor {
-  animation: clearing-demo-cursor 4.6s infinite;
+  animation: clearing-demo-cursor 4s infinite;
 }
 
 .color-match-copy {
@@ -1125,11 +1125,11 @@ button:disabled {
 
 @keyframes color-match-pair-one {
   0%,
-  24.5% {
+  22% {
     opacity: 1;
   }
 
-  25%,
+  22.5%,
   100% {
     opacity: 0;
   }
@@ -1142,11 +1142,11 @@ button:disabled {
   }
 
   25%,
-  49.5% {
+  47% {
     opacity: 1;
   }
 
-  50%,
+  47.5%,
   100% {
     opacity: 0;
   }
@@ -1159,11 +1159,11 @@ button:disabled {
   }
 
   50%,
-  74.5% {
+  72% {
     opacity: 1;
   }
 
-  75%,
+  72.5%,
   100% {
     opacity: 0;
   }
@@ -1176,12 +1176,13 @@ button:disabled {
   }
 
   75%,
-  99.5% {
+  97% {
     opacity: 1;
   }
 
+  97.5%,
   100% {
-    opacity: 1;
+    opacity: 0;
   }
 }
 
