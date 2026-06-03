@@ -675,7 +675,7 @@ button:disabled {
 
 .rules-top {
   display: grid;
-  grid-template-columns: 0.85fr 1.15fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 36px;
 }
 
@@ -690,6 +690,10 @@ button:disabled {
 
 .rules-block p + p {
   margin-top: 8px;
+}
+
+.rules-top .rules-block p {
+  text-align: left;
 }
 
 .rules-cards {
@@ -768,6 +772,14 @@ button:disabled {
 .mini-rule-board.is-unlocking-demo .position-east,
 .mini-rule-board.is-unlocking-demo .position-southEast {
   animation: unlocking-demo-blockers 5.2s infinite;
+}
+
+.mini-rule-board.is-unlocking-demo .position-east {
+  animation-name: unlocking-demo-blocker-middle;
+}
+
+.mini-rule-board.is-unlocking-demo .position-southEast {
+  animation-name: unlocking-demo-blocker-last;
 }
 
 .mini-rule-board.is-unlocking-demo .position-center {
@@ -944,14 +956,48 @@ button:disabled {
   }
 }
 
+@keyframes unlocking-demo-blocker-middle {
+  0%,
+  39% {
+    opacity: 1;
+  }
+
+  51%,
+  82% {
+    opacity: 0;
+  }
+
+  94%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes unlocking-demo-blocker-last {
+  0%,
+  44% {
+    opacity: 1;
+  }
+
+  56%,
+  82% {
+    opacity: 0;
+  }
+
+  94%,
+  100% {
+    opacity: 1;
+  }
+}
+
 @keyframes unlocking-demo-center-state {
   0%,
-  36% {
+  46% {
     opacity: 0.22;
     filter: grayscale(0.35);
   }
 
-  48%,
+  58%,
   82% {
     opacity: 1;
     filter: none;
@@ -966,12 +1012,12 @@ button:disabled {
 
 @keyframes unlocking-demo-select {
   0%,
-  58% {
+  67% {
     stroke: rgba(25, 25, 25, 0.3);
     stroke-width: 2.2;
   }
 
-  66%,
+  71%,
   82% {
     stroke: #050505;
     stroke-width: 4.2;
