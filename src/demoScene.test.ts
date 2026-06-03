@@ -10,10 +10,11 @@ describe('demo scene runner', () => {
         { kind: 'cursorTo', tileId: 'a', ms: 200 },
         { kind: 'press', tileId: 'a', ms: 50 },
         { kind: 'clear', tileIds: ['a'], ms: 300 },
+        { kind: 'cursorFadeOut', ms: 100 },
       ],
     }
 
-    expect(getDemoSceneDuration(scene)).toBe(650)
+    expect(getDemoSceneDuration(scene)).toBe(750)
   })
 
   it('marks tiles as clearing during a clear step and hidden after it completes', () => {
@@ -67,6 +68,20 @@ describe('demo scene runner', () => {
       toPosition: 'east',
       progress: 0.5,
     })
+  })
+
+  it('fades cursors in on first move and out on command', () => {
+    const scene: DemoScene = {
+      tiles: [{ id: 'a', position: 'west', type: 'fire' }],
+      steps: [
+        { kind: 'cursorTo', tileId: 'a', ms: 200 },
+        { kind: 'cursorFadeOut', ms: 200 },
+      ],
+    }
+
+    expect(getDemoStateAt(scene, 90).cursor?.opacity).toBe(0.5)
+    expect(getDemoStateAt(scene, 300).cursor?.opacity).toBe(0.5)
+    expect(getDemoStateAt(scene, 399).cursor?.opacity).toBeLessThan(0.01)
   })
 
   it('resets scene tiles after a reset command', () => {

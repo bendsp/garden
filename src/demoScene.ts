@@ -34,6 +34,7 @@ export type DemoCursorState = {
   toPosition?: RulePosition
   progress: number
   pressing?: boolean
+  opacity?: number
 }
 
 export type DemoRenderState = {
@@ -49,6 +50,7 @@ export type DemoStep =
   | { kind: 'candidate'; tileIds: string[] }
   | { kind: 'lock'; tileIds: string[]; locked: boolean }
   | { kind: 'clear'; tileIds: string[]; ms: number }
+  | { kind: 'cursorFadeOut'; ms: number }
   | { kind: 'hide'; tileIds: string[]; hidden: boolean }
   | { kind: 'setTiles'; tiles: DemoTile[]; ms?: number }
   | { kind: 'reset' }
@@ -66,6 +68,7 @@ function stepDuration(step: DemoStep) {
     case 'hold':
     case 'cursorTo':
     case 'clear':
+    case 'cursorFadeOut':
       return step.ms
     case 'press':
       return step.ms ?? DEFAULT_PRESS_MS
@@ -126,11 +129,13 @@ export function getDemoStateAt(scene: DemoScene, timeMs: number): DemoRenderStat
             return visibleState(tiles, cursor)
           }
           const fromPosition = cursor?.toPosition ?? cursor?.fromPosition ?? toPosition
+          const opacity = cursor?.visible ? 1 : Math.min(1, progressMs / Math.min(180, durationMs))
           return visibleState(tiles, {
             visible: true,
             fromPosition,
             toPosition,
             progress: easeInOut(progressMs / durationMs),
+            opacity,
           })
         }
         case 'press': {
@@ -144,6 +149,7 @@ export function getDemoStateAt(scene: DemoScene, timeMs: number): DemoRenderStat
                   toPosition,
                   progress: 1,
                   pressing: true,
+                  opacity: 1,
                 }
               : cursor,
           )
@@ -158,6 +164,17 @@ export function getDemoStateAt(scene: DemoScene, timeMs: number): DemoRenderStat
             cloneTiles(step.tiles).map((tile) => ({ ...tile, fading: 'in' })),
             cursor,
           )
+        case 'cursorFadeOut':
+          return visibleState(
+            tiles,
+            cursor
+              ? {
+                  ...cursor,
+                  visible: true,
+                  opacity: 1 - progressMs / durationMs,
+                }
+              : undefined,
+          )
         default:
           return visibleState(tiles, cursor)
       }
@@ -168,14 +185,14 @@ export function getDemoStateAt(scene: DemoScene, timeMs: number): DemoRenderStat
         case 'cursorTo': {
           const toPosition = getTilePosition(tiles, step.tileId)
           if (toPosition) {
-            cursor = { visible: true, fromPosition: toPosition, toPosition, progress: 1 }
+            cursor = { visible: true, fromPosition: toPosition, toPosition, progress: 1, opacity: 1 }
           }
           break
         }
         case 'press': {
           const toPosition = getTilePosition(tiles, step.tileId)
           if (toPosition) {
-            cursor = { visible: true, fromPosition: toPosition, toPosition, progress: 1 }
+            cursor = { visible: true, fromPosition: toPosition, toPosition, progress: 1, opacity: 1 }
           }
           break
         }
@@ -191,6 +208,9 @@ export function getDemoStateAt(scene: DemoScene, timeMs: number): DemoRenderStat
           break
         case 'setTiles':
           tiles = cloneTiles(step.tiles)
+          break
+        case 'cursorFadeOut':
+          cursor = undefined
           break
       }
     } else if (localTime >= elapsed) {

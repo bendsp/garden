@@ -685,15 +685,11 @@ button:disabled {
   color: #4f4942;
   font-size: 14px;
   line-height: 1.35;
-  text-align: center;
+  text-align: left;
 }
 
 .rules-block p + p {
   margin-top: 8px;
-}
-
-.rules-top .rules-block p {
-  text-align: left;
 }
 
 .rules-cards {

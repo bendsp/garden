@@ -224,7 +224,11 @@ const MATCH_TIMING = {
   moveSecond: 600,
   clear: 420,
   resetHold: 1640,
+  cursorFade: 260,
 }
+
+const PURPLE_STAGE_HOLD = 420
+const PURPLE_RESET_HOLD = 720
 
 function pairTiles(left: MarbleType, right: MarbleType, context: DemoTile[] = []): DemoTile[] {
   return [
@@ -254,14 +258,19 @@ function singleClearSteps(tileId: string): DemoStep[] {
     { kind: 'cursorTo', tileId, ms: MATCH_TIMING.moveFirst },
     { kind: 'press', tileId, ms: MATCH_TIMING.press },
     { kind: 'select', tileId },
-    { kind: 'hold', ms: MATCH_TIMING.selectedHold + MATCH_TIMING.moveSecond + MATCH_TIMING.press },
+    { kind: 'hold', ms: 360 },
     { kind: 'clear', tileIds: [tileId], ms: MATCH_TIMING.clear },
   ]
 }
 
 const CLEARING_SCENE: DemoScene = {
   tiles: pairTiles('water', 'water'),
-  steps: [...matchSteps('left', 'right'), { kind: 'hold', ms: MATCH_TIMING.resetHold }, { kind: 'reset' }],
+  steps: [
+    ...matchSteps('left', 'right'),
+    { kind: 'hold', ms: MATCH_TIMING.resetHold - MATCH_TIMING.cursorFade },
+    { kind: 'cursorFadeOut', ms: MATCH_TIMING.cursorFade },
+    { kind: 'reset' },
+  ],
 }
 
 const UNLOCKING_SCENE: DemoScene = {
@@ -286,7 +295,8 @@ const UNLOCKING_SCENE: DemoScene = {
     { kind: 'cursorTo', tileId: 'locked-tile', ms: 420 },
     { kind: 'press', tileId: 'locked-tile', ms: 180 },
     { kind: 'select', tileId: 'locked-tile' },
-    { kind: 'hold', ms: 1220 },
+    { kind: 'hold', ms: 960 },
+    { kind: 'cursorFadeOut', ms: MATCH_TIMING.cursorFade },
     { kind: 'reset' },
   ],
 }
@@ -303,7 +313,11 @@ const COLOR_MATCH_SCENE: DemoScene = {
   steps: [
     ...COLOR_SCENARIOS.flatMap((types, index) => {
       const steps: DemoStep[] = index === 0 ? [] : [{ kind: 'setTiles', tiles: pairTiles(...types), ms: 280 }]
-      steps.push(...matchSteps('left', 'right'), { kind: 'hold', ms: MATCH_TIMING.resetHold - (index === 0 ? 0 : 280) })
+      steps.push(...matchSteps('left', 'right'), {
+        kind: 'hold',
+        ms: MATCH_TIMING.resetHold - MATCH_TIMING.cursorFade - (index === 0 ? 0 : 280),
+      })
+      steps.push({ kind: 'cursorFadeOut', ms: MATCH_TIMING.cursorFade })
       return steps
     }),
     { kind: 'setTiles', tiles: pairTiles(...COLOR_SCENARIOS[0]), ms: 280 },
@@ -319,7 +333,12 @@ const POLARITY_CONTEXT: DemoTile[] = [
 
 const POLARITY_MATCH_SCENE: DemoScene = {
   tiles: pairTiles('vitae', 'mors', POLARITY_CONTEXT),
-  steps: [...matchSteps('left', 'right'), { kind: 'hold', ms: MATCH_TIMING.resetHold }, { kind: 'reset' }],
+  steps: [
+    ...matchSteps('left', 'right'),
+    { kind: 'hold', ms: MATCH_TIMING.resetHold - MATCH_TIMING.cursorFade },
+    { kind: 'cursorFadeOut', ms: MATCH_TIMING.cursorFade },
+    { kind: 'reset' },
+  ],
 }
 
 const PURPLE_MATCH_SCENE: DemoScene = {
@@ -333,12 +352,13 @@ const PURPLE_MATCH_SCENE: DemoScene = {
   steps: [
     ...matchSteps('two', 'dot-two'),
     { kind: 'lock', tileIds: ['one'], locked: false },
-    { kind: 'hold', ms: MATCH_TIMING.resetHold },
+    { kind: 'hold', ms: PURPLE_STAGE_HOLD },
     ...matchSteps('one', 'dot-one'),
     { kind: 'lock', tileIds: ['zero'], locked: false },
-    { kind: 'hold', ms: MATCH_TIMING.resetHold },
+    { kind: 'hold', ms: PURPLE_STAGE_HOLD },
     ...singleClearSteps('zero'),
-    { kind: 'hold', ms: MATCH_TIMING.resetHold },
+    { kind: 'hold', ms: PURPLE_RESET_HOLD },
+    { kind: 'cursorFadeOut', ms: MATCH_TIMING.cursorFade },
     { kind: 'reset' },
   ],
 }
@@ -436,6 +456,7 @@ function MiniDemoBoard({ scene, className = '' }: { scene: DemoScene; className?
         <g
           className={`demo-cursor ${state.cursor?.pressing ? 'is-pressing' : ''}`}
           transform={`translate(${cursorPoint.x} ${cursorPoint.y}) scale(${state.cursor?.pressing ? 0.86 : 1})`}
+          opacity={state.cursor?.opacity ?? 1}
         >
           <path d="M0 0 0 24 6.5 18 10.5 28 16 25.7 11.8 16.1 20 16.1Z" />
         </g>
