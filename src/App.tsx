@@ -238,17 +238,23 @@ function pairTiles(left: MarbleType, right: MarbleType, context: DemoTile[] = []
   ]
 }
 
-function matchSteps(firstId: string, secondId: string, clearIds: string[] = [firstId, secondId]): DemoStep[] {
+function matchSteps(
+  firstId: string,
+  secondId: string,
+  clearIds: string[] = [firstId, secondId],
+  candidateIds: string[] = [secondId],
+): DemoStep[] {
   return [
     { kind: 'hold', ms: MATCH_TIMING.lead },
     { kind: 'cursorTo', tileId: firstId, ms: MATCH_TIMING.moveFirst },
     { kind: 'press', tileId: firstId, ms: MATCH_TIMING.press },
     { kind: 'select', tileId: firstId },
-    { kind: 'candidate', tileIds: [secondId] },
+    { kind: 'candidate', tileIds: candidateIds },
     { kind: 'hold', ms: MATCH_TIMING.selectedHold },
     { kind: 'cursorTo', tileId: secondId, ms: MATCH_TIMING.moveSecond },
     { kind: 'press', tileId: secondId, ms: MATCH_TIMING.press },
     { kind: 'clear', tileIds: clearIds, ms: MATCH_TIMING.clear },
+    { kind: 'candidate', tileIds: [] },
   ]
 }
 
@@ -301,26 +307,41 @@ const UNLOCKING_SCENE: DemoScene = {
   ],
 }
 
-const COLOR_SCENARIOS: Array<[MarbleType, MarbleType]> = [
-  ['fire', 'fire'],
-  ['water', 'water'],
-  ['earth', 'salt'],
-  ['salt', 'salt'],
+const COLOR_SCENARIOS: Array<{
+  tiles: DemoTile[]
+  targetId?: string
+  clearIds?: string[]
+  candidateIds?: string[]
+}> = [
+  { tiles: pairTiles('fire', 'fire') },
+  { tiles: pairTiles('water', 'water') },
+  {
+    tiles: [
+      { id: 'left', position: 'west', type: 'salt' },
+      { id: 'right', position: 'east', type: 'earth' },
+      { id: 'blue-candidate', position: 'northEast', type: 'water' },
+      { id: 'green-candidate', position: 'southEast', type: 'earth' },
+    ],
+    candidateIds: ['right', 'blue-candidate', 'green-candidate'],
+  },
+  { tiles: pairTiles('salt', 'salt') },
 ]
 
 const COLOR_MATCH_SCENE: DemoScene = {
-  tiles: pairTiles(...COLOR_SCENARIOS[0]),
+  tiles: COLOR_SCENARIOS[0].tiles,
   steps: [
-    ...COLOR_SCENARIOS.flatMap((types, index) => {
-      const steps: DemoStep[] = index === 0 ? [] : [{ kind: 'setTiles', tiles: pairTiles(...types), ms: 280 }]
-      steps.push(...matchSteps('left', 'right'), {
+    ...COLOR_SCENARIOS.flatMap((scenario, index) => {
+      const targetId = scenario.targetId ?? 'right'
+      const clearIds = scenario.clearIds ?? ['left', targetId]
+      const steps: DemoStep[] = index === 0 ? [] : [{ kind: 'setTiles', tiles: scenario.tiles, ms: 280 }]
+      steps.push(...matchSteps('left', targetId, clearIds, scenario.candidateIds ?? [targetId]), {
         kind: 'hold',
         ms: MATCH_TIMING.resetHold - MATCH_TIMING.cursorFade - (index === 0 ? 0 : 280),
       })
       steps.push({ kind: 'cursorFadeOut', ms: MATCH_TIMING.cursorFade })
       return steps
     }),
-    { kind: 'setTiles', tiles: pairTiles(...COLOR_SCENARIOS[0]), ms: 280 },
+    { kind: 'setTiles', tiles: COLOR_SCENARIOS[0].tiles, ms: 280 },
     { kind: 'hold', ms: MATCH_TIMING.resetHold - 280 },
     { kind: 'reset' },
   ],
