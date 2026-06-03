@@ -905,6 +905,7 @@ button:disabled {
 }
 
 .result {
+  position: relative;
   width: min(420px, calc(100vw - 36px));
   display: flex;
   flex-direction: column;
@@ -919,9 +920,9 @@ button:disabled {
 }
 
 .result-win {
-  width: min(560px, calc(100vw - 36px));
-  gap: 18px;
-  padding: 30px;
+  width: min(720px, calc(100vw - 36px));
+  gap: 24px;
+  padding: 42px 38px 34px;
 }
 
 .result h2 {
@@ -932,7 +933,7 @@ button:disabled {
 }
 
 .result-win h2 {
-  font-size: 34px;
+  font-size: 42px;
   letter-spacing: 0;
 }
 
@@ -946,21 +947,45 @@ button:disabled {
   width: 100%;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  gap: 24px;
 }
 
 .result-stat-column {
   display: grid;
-  gap: 10px;
-  padding: 14px;
+  gap: 12px;
+  align-content: start;
+  min-height: 180px;
+  padding: 0;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.38);
 }
 
+.result-stat-column h3 {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0 4px;
+  color: #403833;
+  font-size: 18px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.result-stat-column h3::before,
+.result-stat-column h3::after {
+  content: "";
+  height: 1px;
+  background: #8d877c;
+}
+
 .result-stat {
   display: grid;
-  gap: 4px;
+  gap: 6px;
+  padding-inline: 18px;
 }
 
 .result-stat span {
@@ -970,10 +995,28 @@ button:disabled {
 
 .result-stat strong {
   color: var(--ink);
-  font-size: 25px;
+  font-size: 32px;
   font-weight: 700;
   line-height: 1.1;
   font-variant-numeric: tabular-nums;
+}
+
+.result-close {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  z-index: 1;
+  width: 30px;
+  min-height: 30px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.result-close:hover:not(:disabled) {
+  border-color: transparent;
 }
 
 .result button {
@@ -1019,7 +1062,7 @@ button:disabled {
   }
 
   .result-win {
-    padding: 22px;
+    padding: 34px 16px 22px;
     gap: 14px;
   }
 
@@ -1032,11 +1075,21 @@ button:disabled {
   }
 
   .result-stat-column {
-    padding: 10px 8px;
+    min-height: 150px;
   }
 
   .result-stat strong {
     font-size: 21px;
+  }
+
+  .result-stat-column h3 {
+    gap: 8px;
+    margin-top: 14px;
+    font-size: 14px;
+  }
+
+  .result-stat {
+    padding-inline: 8px;
   }
 
   button {

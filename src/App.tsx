@@ -570,6 +570,7 @@ function App() {
   const [countedWin, setCountedWin] = useState<string | null>(null)
   const [rulesOpen, setRulesOpen] = useState(true)
   const [lossOpen, setLossOpen] = useState(false)
+  const [winOpen, setWinOpen] = useState(true)
   const [now, setNow] = useState(() => Date.now())
   const levelsBufferRef = useRef<ArrayBuffer | null>(null)
   const nextGameRef = useRef<GameState | null>(null)
@@ -632,6 +633,7 @@ function App() {
       nextGameRef.current = null
       setGame(activateGame(preparedGame))
       setLossOpen(false)
+      setWinOpen(true)
       scheduleNextGame(buffer)
       setCountedWin(null)
       setLoadError('')
@@ -648,6 +650,7 @@ function App() {
         if (!cancelled) {
           const initialGame = makeGame(buffer)
           setGame(activateGame(initialGame))
+          setWinOpen(true)
           scheduleNextGame(buffer)
           setLoadError('')
         }
@@ -664,19 +667,23 @@ function App() {
   }, [loadLevelsBuffer, scheduleNextGame])
 
   useEffect(() => {
-    if (!rulesOpen) {
+    if (!rulesOpen && !(game?.finishedAt && winOpen)) {
       return undefined
     }
 
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        setRulesOpen(false)
+        if (game?.finishedAt && winOpen) {
+          setWinOpen(false)
+        } else {
+          setRulesOpen(false)
+        }
       }
     }
 
     document.addEventListener('keydown', closeOnEscape)
     return () => document.removeEventListener('keydown', closeOnEscape)
-  }, [rulesOpen])
+  }, [game?.finishedAt, rulesOpen, winOpen])
 
   useEffect(() => {
     if (!game?.timerStartedAt || game.finishedAt || lossOpen) {
@@ -960,12 +967,16 @@ function App() {
         </div>
       </section>
 
-      {game.finishedAt && (
+      {game.finishedAt && winOpen && (
         <section className="result-backdrop" aria-label="Win result">
           <div className="result result-win" role="dialog" aria-modal="true" aria-labelledby="win-title">
+            <button className="result-close" type="button" aria-label="Close result" onClick={() => setWinOpen(false)}>
+              ×
+            </button>
             <h2 id="win-title">Board cleared!</h2>
             <div className="result-stats" aria-label="Game statistics">
-              <div className="result-stat-column">
+              <section className="result-stat-column" aria-labelledby="time-stats-title">
+                <h3 id="time-stats-title">Time</h3>
                 <p className="result-stat">
                   <span>Time</span>
                   <strong>{formatTime(elapsedMs)}</strong>
@@ -974,8 +985,9 @@ function App() {
                   <span>Best time</span>
                   <strong>{bestTime === undefined ? '—' : formatTime(bestTime)}</strong>
                 </p>
-              </div>
-              <div className="result-stat-column">
+              </section>
+              <section className="result-stat-column" aria-labelledby="win-stats-title">
+                <h3 id="win-stats-title">Wins</h3>
                 <p className="result-stat">
                   <span>Wins</span>
                   <strong>{wins}</strong>
@@ -984,7 +996,7 @@ function App() {
                   <span>Win percentage</span>
                   <strong>{winPercentage}</strong>
                 </p>
-              </div>
+              </section>
             </div>
             <button type="button" onClick={() => void newGame()}>
               Play again
