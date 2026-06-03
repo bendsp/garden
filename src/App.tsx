@@ -155,38 +155,6 @@ function useMediaQuery(query: string) {
   return matches
 }
 
-function RuleHex({
-  type,
-  mark,
-  empty = false,
-  locked = false,
-  offBoard = false,
-}: {
-  type?: MarbleType
-  mark?: string
-  empty?: boolean
-  locked?: boolean
-  offBoard?: boolean
-}) {
-  const label = mark ?? (type ? MARBLE_MARKS[type] : '')
-  return (
-    <svg
-      className={`rule-hex ${type ? `marble-${type}` : ''} ${empty ? 'is-empty' : ''} ${
-        locked ? 'is-locked' : ''
-      } ${offBoard ? 'is-off-board' : ''}`}
-      viewBox="-24 -24 48 48"
-      aria-hidden="true"
-    >
-      <polygon points={hexPoints(21)} />
-      {label && (
-        <text textAnchor="middle" dominantBaseline="central">
-          {label}
-        </text>
-      )}
-    </svg>
-  )
-}
-
 function GuideToken({
   type,
   count,
@@ -488,6 +456,108 @@ function PolarityMatchDemoBoard() {
   )
 }
 
+function MiniDemoMarble({
+  position,
+  type,
+  className = '',
+  matchCandidate = false,
+}: {
+  position: RulePosition
+  type: MarbleType
+  className?: string
+  matchCandidate?: boolean
+}) {
+  const point = miniPoint(position)
+  const mark = MARBLE_MARKS[type]
+
+  return (
+    <g
+      className={`marble position-${position} marble-${type} ${className}`}
+      transform={`translate(${point.x} ${point.y})`}
+    >
+      {matchCandidate && <polygon className="match-pulse" points={hexPoints(MINI_HEX_SIZE - 1)} />}
+      <polygon className="marble-face" points={hexPoints(MINI_HEX_SIZE - 5)} />
+      {mark && (
+        <text aria-hidden="true" textAnchor="middle" dominantBaseline="central">
+          {mark}
+        </text>
+      )}
+    </g>
+  )
+}
+
+function cursorVars(first: RulePosition, second: RulePosition) {
+  const firstPoint = miniPoint(first)
+  const secondPoint = miniPoint(second)
+
+  return {
+    '--cursor-start-x': `${firstPoint.x - 44}px`,
+    '--cursor-start-y': `${firstPoint.y + 28}px`,
+    '--cursor-first-x': `${firstPoint.x - 2}px`,
+    '--cursor-first-y': `${firstPoint.y + 5}px`,
+    '--cursor-second-x': `${secondPoint.x - 2}px`,
+    '--cursor-second-y': `${secondPoint.y + 5}px`,
+  } as CSSProperties
+}
+
+function DemoCursor() {
+  return (
+    <g className="demo-cursor">
+      <path d="M0 0 0 24 6.5 18 10.5 28 16 25.7 11.8 16.1 20 16.1Z" />
+    </g>
+  )
+}
+
+function PurpleMatchDemoBoard() {
+  return (
+    <svg
+      className="mini-rule-board purple-match-demo-board"
+      viewBox={`0 0 ${MINI_BOARD_WIDTH} ${MINI_BOARD_HEIGHT}`}
+      aria-hidden="true"
+    >
+      <g className="grid">
+        {RULE_POSITIONS.map((position) => {
+          const point = miniPoint(position)
+          return (
+            <polygon
+              key={position}
+              points={hexPoints(MINI_HEX_SIZE - 2)}
+              transform={`translate(${point.x} ${point.y})`}
+            />
+          )
+        })}
+      </g>
+
+      <g className="purple-demo-static-dot-one">
+        <MiniDemoMarble position="northWest" type="quicksilver" />
+      </g>
+      <g className="purple-demo-locked-one">
+        <MiniDemoMarble position="southWest" type="silver" />
+      </g>
+      <g className="purple-demo-locked-zero">
+        <MiniDemoMarble position="center" type="gold" />
+      </g>
+
+      <g className="purple-demo-stage purple-demo-stage-two" style={cursorVars('east', 'northEast')}>
+        <MiniDemoMarble position="east" type="copper" className="is-demo-selected" />
+        <MiniDemoMarble position="northEast" type="quicksilver" className="is-demo-target" matchCandidate />
+        <DemoCursor />
+      </g>
+
+      <g className="purple-demo-stage purple-demo-stage-one" style={cursorVars('southWest', 'northWest')}>
+        <MiniDemoMarble position="southWest" type="silver" className="is-demo-selected" />
+        <MiniDemoMarble position="northWest" type="quicksilver" className="is-demo-target" matchCandidate />
+        <DemoCursor />
+      </g>
+
+      <g className="purple-demo-stage purple-demo-stage-zero" style={cursorVars('center', 'center')}>
+        <MiniDemoMarble position="center" type="gold" className="is-demo-selected" />
+        <DemoCursor />
+      </g>
+    </svg>
+  )
+}
+
 function BrandLogo({ className = '' }: { className?: string }) {
   return (
     <div className={`brand ${className}`}>
@@ -570,8 +640,6 @@ function LoadingMessage({ error, onRetry }: { error: string; onRetry: () => void
 }
 
 function RulesModal({ onClose }: { onClose: () => void }) {
-  const metalTypes: MarbleType[] = ['lead', 'tin', 'iron', 'copper', 'silver']
-
   return (
     <div className="rules-backdrop" role="presentation" onClick={onClose}>
       <section
@@ -654,19 +722,9 @@ function RulesModal({ onClose }: { onClose: () => void }) {
               <p>+ and − only match with each other.</p>
             </article>
 
-            <article>
-              <div className="metal-chain" aria-hidden="true">
-                {metalTypes.map((type) => (
-                  <Fragment key={type}>
-                    <span className="metal-step">
-                      <RuleHex type={type} />
-                      <span>+</span>
-                      <RuleHex type="quicksilver" />
-                    </span>
-                    <span className="chain-arrow">&gt;</span>
-                  </Fragment>
-                ))}
-                <RuleHex type="gold" />
+            <article className="purple-match-demo">
+              <div className="color-match-frame">
+                <PurpleMatchDemoBoard />
               </div>
               <p>
                 The purple numbers match with ● in <strong>descending order</strong>. 0 clears alone.
