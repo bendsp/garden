@@ -168,3 +168,11 @@ export function playWinSound() {
     { frequency: 980, startOffset: 0.18, duration: 0.14, gain: 0.04 },
   ])
 }
+
+export function playLossSound() {
+  playSound('loss', [
+    { frequency: 520, startOffset: 0, duration: 0.09, gain: 0.045 },
+    { frequency: 410, startOffset: 0.085, duration: 0.1, gain: 0.042 },
+    { frequency: 310, startOffset: 0.18, duration: 0.16, gain: 0.038 },
+  ])
+}

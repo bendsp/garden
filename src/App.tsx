@@ -1,6 +1,6 @@
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
 import './App.css'
-import { playMatchSound, playSelectSound, playWinSound } from './audio'
+import { playLossSound, playMatchSound, playSelectSound, playWinSound } from './audio'
 import {
   CELLS,
   MARBLE_LABELS,
@@ -573,6 +573,8 @@ function App() {
     const nextGame = applyRemoval(game, ids)
     if (nextGame.finishedAt) {
       playWinSound()
+    } else if (legalMoves(nextGame.board, nextGame.metalIndex).length === 0) {
+      playLossSound()
     } else {
       playMatchSound()
     }
