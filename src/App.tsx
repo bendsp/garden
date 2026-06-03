@@ -621,7 +621,7 @@ function RulesModal({ onClose }: { onClose: () => void }) {
               <div className="color-match-copy">
                 <p>The basic tiles match with other tiles of the same color.</p>
                 <p>
-                  Rainbow matches with any basic tile <strong>or with itself</strong>.
+                  Rainbow tiles match with any basic tile <strong>or with itself</strong>.
                 </p>
               </div>
             </article>

@@ -123,7 +123,7 @@ Blue + Blue
 Green + Green
 ```
 
-Rainbow matches any primary color or itself:
+Rainbow tiles match any primary color or itself:
 
 ```text
 Rainbow + Yellow
