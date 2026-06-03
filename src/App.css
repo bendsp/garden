@@ -482,7 +482,125 @@ button:disabled {
 }
 
 .app-loading {
-  justify-content: center;
+  gap: 14px;
+}
+
+.loading-stage {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  min-height: 0;
+}
+
+.loading-copy {
+  margin: 0;
+  color: var(--ink);
+  font-size: 19px;
+  font-weight: 520;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.loading-copy button {
+  margin-top: 14px;
+}
+
+.loading-copy p {
+  margin: 0;
+}
+
+.loading-dots {
+  display: inline-grid;
+  grid-template-columns: repeat(3, 0.28em);
+  width: 0.84em;
+  justify-content: start;
+  text-align: left;
+}
+
+.loading-dots span {
+  opacity: 0;
+  transform: translateY(0.18em) scale(0.6);
+  animation: loading-dot-one 1.35s infinite;
+}
+
+.loading-dots span:nth-child(2) {
+  animation-name: loading-dot-two;
+}
+
+.loading-dots span:nth-child(3) {
+  animation-name: loading-dot-three;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@keyframes loading-dot-one {
+  0%,
+  12% {
+    opacity: 0;
+    transform: translateY(0.18em) scale(0.6);
+  }
+
+  18%,
+  72% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  78%,
+  100% {
+    opacity: 0;
+    transform: translateY(0.18em) scale(0.6);
+  }
+}
+
+@keyframes loading-dot-two {
+  0%,
+  28% {
+    opacity: 0;
+    transform: translateY(0.18em) scale(0.6);
+  }
+
+  34%,
+  72% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  78%,
+  100% {
+    opacity: 0;
+    transform: translateY(0.18em) scale(0.6);
+  }
+}
+
+@keyframes loading-dot-three {
+  0%,
+  44% {
+    opacity: 0;
+    transform: translateY(0.18em) scale(0.6);
+  }
+
+  50%,
+  72% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  78%,
+  100% {
+    opacity: 0;
+    transform: translateY(0.18em) scale(0.6);
+  }
 }
 
 .rules-backdrop {

@@ -341,6 +341,76 @@ function BrandLogo({ className = '' }: { className?: string }) {
   )
 }
 
+function AppHeader({
+  elapsed = '0:00',
+  undoDisabled,
+  onRules,
+  onUndo,
+  onNew,
+  disabled = false,
+}: {
+  elapsed?: string
+  undoDisabled: boolean
+  onRules: () => void
+  onUndo: () => void
+  onNew: () => void
+  disabled?: boolean
+}) {
+  return (
+    <header className="topbar">
+      <BrandLogo />
+      <div className="topbar-timer" aria-label="Elapsed time">
+        {elapsed}
+      </div>
+      <div className="actions" aria-label="Game controls">
+        <button type="button" onClick={onRules} disabled={disabled}>
+          Rules
+        </button>
+        <button type="button" onClick={onUndo} disabled={disabled || undoDisabled}>
+          Undo
+        </button>
+        <button type="button" onClick={onNew} disabled={disabled}>
+          New
+        </button>
+      </div>
+    </header>
+  )
+}
+
+function LoadingMessage({ error, onRetry }: { error: string; onRetry: () => void }) {
+  return (
+    <main className="app app-loading">
+      <AppHeader
+        undoDisabled
+        disabled
+        onRules={() => undefined}
+        onUndo={() => undefined}
+        onNew={onRetry}
+      />
+      <section className="loading-stage" aria-live="polite">
+        {error ? (
+          <div className="loading-copy">
+            <p>{error}</p>
+            <button type="button" onClick={onRetry}>
+              Retry
+            </button>
+          </div>
+        ) : (
+          <p className="loading-copy">
+            Loading Garden
+            <span className="loading-dots" aria-hidden="true">
+              <span>.</span>
+              <span>.</span>
+              <span>.</span>
+            </span>
+            <span className="sr-only">...</span>
+          </p>
+        )}
+      </section>
+    </main>
+  )
+}
+
 function RulesModal({ onClose }: { onClose: () => void }) {
   const elementTypes: MarbleType[] = ['fire', 'air', 'earth', 'water']
   const metalTypes: MarbleType[] = ['lead', 'tin', 'iron', 'copper', 'silver']
@@ -718,17 +788,7 @@ function App() {
   }
 
   if (!game) {
-    return (
-      <main className="app app-loading">
-        <h1>Garden</h1>
-        <p>{loadError || 'Loading levels.'}</p>
-        {loadError && (
-          <button type="button" onClick={() => void newGame()}>
-            Retry
-          </button>
-        )}
-      </main>
-    )
+    return <LoadingMessage error={loadError} onRetry={() => void newGame()} />
   }
 
   const currentPurple = getUnlockedMetal(game.metalIndex)
@@ -743,30 +803,16 @@ function App() {
 
   return (
     <main className="app">
-      <header className="topbar">
-        <BrandLogo />
-        <div className="topbar-timer" aria-label="Elapsed time">
-          {formatTime(elapsedMs)}
-        </div>
-        <div className="actions" aria-label="Game controls">
-          <button type="button" onClick={() => setRulesOpen((open) => !open)}>
-            Rules
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setLossOpen(false)
-              setGame((current) => (current ? undoGame(current) : current))
-            }}
-            disabled={!game.history.length}
-          >
-            Undo
-          </button>
-          <button type="button" onClick={() => void newGame()}>
-            New
-          </button>
-        </div>
-      </header>
+      <AppHeader
+        elapsed={formatTime(elapsedMs)}
+        undoDisabled={!game.history.length}
+        onRules={() => setRulesOpen((open) => !open)}
+        onUndo={() => {
+          setLossOpen(false)
+          setGame((current) => (current ? undoGame(current) : current))
+        }}
+        onNew={() => void newGame()}
+      />
 
       <section className="board-wrap" aria-label="Puzzle board">
         <svg
