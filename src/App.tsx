@@ -328,6 +328,17 @@ function MatchPair({ types }: { types: [MarbleType, MarbleType] }) {
   )
 }
 
+function BrandLogo({ className = '' }: { className?: string }) {
+  return (
+    <div className={`brand ${className}`}>
+      <svg className="brand-mark" viewBox="-13 -13 26 26" aria-hidden="true">
+        <polygon points={hexPoints(11.5)} />
+      </svg>
+      <h1>Garden</h1>
+    </div>
+  )
+}
+
 function RulesModal({ onClose }: { onClose: () => void }) {
   const elementTypes: MarbleType[] = ['fire', 'air', 'earth', 'water']
   const metalTypes: MarbleType[] = ['lead', 'tin', 'iron', 'copper', 'silver']
@@ -344,6 +355,8 @@ function RulesModal({ onClose }: { onClose: () => void }) {
         <button className="rules-close" type="button" aria-label="Close rules" onClick={onClose}>
           ×
         </button>
+
+        <BrandLogo className="rules-brand" />
 
         <div className="rules-top">
           <section className="rules-block">
@@ -446,6 +459,11 @@ function RulesModal({ onClose }: { onClose: () => void }) {
             </article>
           </div>
         </section>
+        <div className="rules-footer">
+          <button type="button" onClick={onClose}>
+            Got it
+          </button>
+        </div>
       </section>
     </div>
   )
@@ -712,12 +730,7 @@ function App() {
   return (
     <main className="app">
       <header className="topbar">
-        <div className="brand">
-          <svg className="brand-mark" viewBox="-12 -12 24 24" aria-hidden="true">
-            <polygon points={hexPoints(10)} />
-          </svg>
-          <h1>Garden</h1>
-        </div>
+        <BrandLogo />
         <div className="actions" aria-label="Game controls">
           <button type="button" onClick={() => setRulesOpen((open) => !open)}>
             Rules

@@ -38,12 +38,14 @@
 }
 
 .brand {
+  display: flex;
+  align-items: center;
   gap: 9px;
 }
 
 .brand-mark {
-  width: 22px;
-  height: 25px;
+  width: 30px;
+  height: 35px;
   flex: 0 0 auto;
   overflow: visible;
 }
@@ -55,7 +57,7 @@
   stroke-width: 1.6;
 }
 
-.topbar h1 {
+.brand h1 {
   margin: 0;
   font-size: 26px;
   line-height: 1;
@@ -519,16 +521,25 @@ button:disabled {
 
 .rules-close {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 14px;
+  right: 16px;
   z-index: 1;
-  width: 34px;
-  min-height: 34px;
+  width: 30px;
+  min-height: 30px;
   padding: 0;
-  border-color: #bdb8ad;
-  background: #e8e4da;
+  border: 0;
+  background: transparent;
   font-size: 22px;
   line-height: 1;
+}
+
+.rules-close:hover:not(:disabled) {
+  border-color: transparent;
+}
+
+.rules-brand {
+  justify-content: center;
+  margin: 0 36px 22px;
 }
 
 .rules-top {
@@ -711,6 +722,12 @@ button:disabled {
   margin-top: 26px;
 }
 
+.rules-footer {
+  display: flex;
+  justify-content: center;
+  margin-top: 24px;
+}
+
 .combination-grid {
   display: grid;
   grid-template-columns: 1.1fr 1.25fr 0.75fr 1.6fr;
@@ -804,7 +821,7 @@ button:disabled {
     gap: 8px;
   }
 
-  .topbar h1 {
+  .brand h1 {
     font-size: 23px;
   }
 
