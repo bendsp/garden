@@ -365,7 +365,7 @@ function RulesModal({ onClose }: { onClose: () => void }) {
               <article>
                 <MiniRuleBoard
                   tiles={[
-                    { position: 'center', type: 'water', selected: true },
+                    { position: 'west', type: 'water', selected: true },
                     { position: 'east', type: 'water', matchCandidate: true },
                   ]}
                 />
@@ -474,7 +474,7 @@ function App() {
   const [loadError, setLoadError] = useState('')
   const [wins, setWins] = useState(() => Number(localStorage.getItem('garden:wins') ?? '0'))
   const [countedWin, setCountedWin] = useState<string | null>(null)
-  const [rulesOpen, setRulesOpen] = useState(false)
+  const [rulesOpen, setRulesOpen] = useState(true)
   const [lossOpen, setLossOpen] = useState(false)
   const levelsBufferRef = useRef<ArrayBuffer | null>(null)
   const nextGameRef = useRef<GameState | null>(null)
