@@ -1,6 +1,15 @@
-import { Fragment, type CSSProperties, useCallback, useEffect, useRef, useState } from 'react'
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
 import './App.css'
 import { playLossSound, playMatchSound, playSelectSound, playWinSound } from './audio'
+import {
+  RULE_COORDS,
+  RULE_POSITIONS,
+  type DemoCursorState,
+  type DemoScene,
+  type DemoStep,
+  type DemoTile,
+  type RulePosition,
+} from './demoScene'
 import {
   CELLS,
   MARBLE_LABELS,
@@ -18,6 +27,7 @@ import {
   parseLevelsDat,
   undoGame,
 } from './game'
+import { useDemoScene } from './useDemoScene'
 
 const HEX_SIZE = 31
 const HEX_WIDTH = Math.sqrt(3) * HEX_SIZE
@@ -194,31 +204,9 @@ function GuideToken({
   )
 }
 
-type RulePosition = 'northWest' | 'northEast' | 'west' | 'center' | 'east' | 'southWest' | 'southEast'
-
-const RULE_POSITIONS: RulePosition[] = ['northWest', 'northEast', 'west', 'center', 'east', 'southWest', 'southEast']
 const MINI_HEX_SIZE = 24
 const MINI_BOARD_WIDTH = MINI_HEX_SIZE * Math.sqrt(3) * 3 + 28
 const MINI_BOARD_HEIGHT = MINI_HEX_SIZE * 3.5 + 28
-const RULE_COORDS: Record<RulePosition, { q: number; r: number }> = {
-  northWest: { q: 0, r: -1 },
-  northEast: { q: 1, r: -1 },
-  west: { q: -1, r: 0 },
-  center: { q: 0, r: 0 },
-  east: { q: 1, r: 0 },
-  southWest: { q: -1, r: 1 },
-  southEast: { q: 0, r: 1 },
-}
-
-type MiniTile = {
-  position: RulePosition
-  type?: MarbleType
-  mark?: string
-  selected?: boolean
-  matchCandidate?: boolean
-  locked?: boolean
-  offBoard?: boolean
-}
 
 function miniPoint(position: RulePosition) {
   const { q, r } = RULE_COORDS[position]
@@ -228,36 +216,151 @@ function miniPoint(position: RulePosition) {
   }
 }
 
-function MiniRuleBoard({
-  tiles,
-  animatedClearing = false,
-  animatedUnlocking = false,
-}: {
-  tiles: MiniTile[]
-  animatedClearing?: boolean
-  animatedUnlocking?: boolean
-}) {
-  const tileByPosition = new Map(tiles.map((tile) => [tile.position, tile]))
-  const westPoint = miniPoint('west')
-  const eastPoint = miniPoint('east')
-  const centerPoint = miniPoint('center')
+const MATCH_TIMING = {
+  lead: 320,
+  moveFirst: 360,
+  press: 180,
+  selectedHold: 300,
+  moveSecond: 600,
+  clear: 420,
+  resetHold: 1640,
+}
+
+function pairTiles(left: MarbleType, right: MarbleType, context: DemoTile[] = []): DemoTile[] {
+  return [
+    ...context,
+    { id: 'left', position: 'west', type: left },
+    { id: 'right', position: 'east', type: right },
+  ]
+}
+
+function matchSteps(firstId: string, secondId: string, clearIds: string[] = [firstId, secondId]): DemoStep[] {
+  return [
+    { kind: 'hold', ms: MATCH_TIMING.lead },
+    { kind: 'cursorTo', tileId: firstId, ms: MATCH_TIMING.moveFirst },
+    { kind: 'press', tileId: firstId, ms: MATCH_TIMING.press },
+    { kind: 'select', tileId: firstId },
+    { kind: 'candidate', tileIds: [secondId] },
+    { kind: 'hold', ms: MATCH_TIMING.selectedHold },
+    { kind: 'cursorTo', tileId: secondId, ms: MATCH_TIMING.moveSecond },
+    { kind: 'press', tileId: secondId, ms: MATCH_TIMING.press },
+    { kind: 'clear', tileIds: clearIds, ms: MATCH_TIMING.clear },
+  ]
+}
+
+function singleClearSteps(tileId: string): DemoStep[] {
+  return [
+    { kind: 'hold', ms: MATCH_TIMING.lead },
+    { kind: 'cursorTo', tileId, ms: MATCH_TIMING.moveFirst },
+    { kind: 'press', tileId, ms: MATCH_TIMING.press },
+    { kind: 'select', tileId },
+    { kind: 'hold', ms: MATCH_TIMING.selectedHold + MATCH_TIMING.moveSecond + MATCH_TIMING.press },
+    { kind: 'clear', tileIds: [tileId], ms: MATCH_TIMING.clear },
+  ]
+}
+
+const CLEARING_SCENE: DemoScene = {
+  tiles: pairTiles('water', 'water'),
+  steps: [...matchSteps('left', 'right'), { kind: 'hold', ms: MATCH_TIMING.resetHold }, { kind: 'reset' }],
+}
+
+const UNLOCKING_SCENE: DemoScene = {
+  tiles: [
+    { id: 'north-west-blocker', position: 'northWest', type: 'fire' },
+    { id: 'top-blocker', position: 'northEast', type: 'fire' },
+    { id: 'west-blocker', position: 'west', type: 'fire' },
+    { id: 'locked-tile', position: 'center', type: 'water', locked: true },
+    { id: 'middle-blocker', position: 'east', type: 'fire' },
+    { id: 'south-west-blocker', position: 'southWest', type: 'fire' },
+    { id: 'bottom-blocker', position: 'southEast', type: 'fire' },
+  ],
+  steps: [
+    { kind: 'hold', ms: 620 },
+    { kind: 'clear', tileIds: ['top-blocker'], ms: 360 },
+    { kind: 'hold', ms: 180 },
+    { kind: 'clear', tileIds: ['middle-blocker'], ms: 360 },
+    { kind: 'hold', ms: 180 },
+    { kind: 'clear', tileIds: ['bottom-blocker'], ms: 360 },
+    { kind: 'lock', tileIds: ['locked-tile'], locked: false },
+    { kind: 'hold', ms: 320 },
+    { kind: 'cursorTo', tileId: 'locked-tile', ms: 420 },
+    { kind: 'press', tileId: 'locked-tile', ms: 180 },
+    { kind: 'select', tileId: 'locked-tile' },
+    { kind: 'hold', ms: 1220 },
+    { kind: 'reset' },
+  ],
+}
+
+const COLOR_SCENARIOS: Array<[MarbleType, MarbleType]> = [
+  ['fire', 'fire'],
+  ['water', 'water'],
+  ['earth', 'salt'],
+  ['salt', 'salt'],
+]
+
+const COLOR_MATCH_SCENE: DemoScene = {
+  tiles: pairTiles(...COLOR_SCENARIOS[0]),
+  steps: [
+    ...COLOR_SCENARIOS.flatMap((types, index) => {
+      const steps: DemoStep[] = index === 0 ? [] : [{ kind: 'setTiles', tiles: pairTiles(...types), ms: 280 }]
+      steps.push(...matchSteps('left', 'right'), { kind: 'hold', ms: MATCH_TIMING.resetHold - (index === 0 ? 0 : 280) })
+      return steps
+    }),
+    { kind: 'setTiles', tiles: pairTiles(...COLOR_SCENARIOS[0]), ms: 280 },
+    { kind: 'hold', ms: MATCH_TIMING.resetHold - 280 },
+    { kind: 'reset' },
+  ],
+}
+
+const POLARITY_CONTEXT: DemoTile[] = [
+  { id: 'context-green', position: 'southWest', type: 'earth' },
+  { id: 'context-yellow', position: 'northEast', type: 'air' },
+]
+
+const POLARITY_MATCH_SCENE: DemoScene = {
+  tiles: pairTiles('vitae', 'mors', POLARITY_CONTEXT),
+  steps: [...matchSteps('left', 'right'), { kind: 'hold', ms: MATCH_TIMING.resetHold }, { kind: 'reset' }],
+}
+
+const PURPLE_MATCH_SCENE: DemoScene = {
+  tiles: [
+    { id: 'dot-one', position: 'northWest', type: 'quicksilver' },
+    { id: 'dot-two', position: 'northEast', type: 'quicksilver' },
+    { id: 'zero', position: 'center', type: 'gold', locked: true },
+    { id: 'two', position: 'east', type: 'copper' },
+    { id: 'one', position: 'southWest', type: 'silver', locked: true },
+  ],
+  steps: [
+    ...matchSteps('two', 'dot-two'),
+    { kind: 'lock', tileIds: ['one'], locked: false },
+    { kind: 'hold', ms: MATCH_TIMING.resetHold },
+    ...matchSteps('one', 'dot-one'),
+    { kind: 'lock', tileIds: ['zero'], locked: false },
+    { kind: 'hold', ms: MATCH_TIMING.resetHold },
+    ...singleClearSteps('zero'),
+    { kind: 'hold', ms: MATCH_TIMING.resetHold },
+    { kind: 'reset' },
+  ],
+}
+
+function interpolateCursor(cursor: DemoCursorState) {
+  const from = miniPoint(cursor.fromPosition ?? cursor.toPosition ?? 'center')
+  const to = miniPoint(cursor.toPosition ?? cursor.fromPosition ?? 'center')
+  return {
+    x: from.x + (to.x - from.x) * cursor.progress - 2,
+    y: from.y + (to.y - from.y) * cursor.progress + 5,
+  }
+}
+
+function MiniDemoBoard({ scene, className = '' }: { scene: DemoScene; className?: string }) {
+  const state = useDemoScene(scene)
+  const cursorPoint = state.cursor?.visible ? interpolateCursor(state.cursor) : undefined
+
   return (
     <svg
-      className={`mini-rule-board ${animatedClearing ? 'is-clearing-demo' : ''} ${
-        animatedUnlocking ? 'is-unlocking-demo' : ''
-      }`}
+      className={`mini-rule-board mini-demo-board ${className}`}
       viewBox={`0 0 ${MINI_BOARD_WIDTH} ${MINI_BOARD_HEIGHT}`}
       aria-hidden="true"
-      style={{
-        '--cursor-start-x': `${westPoint.x - 44}px`,
-        '--cursor-start-y': `${westPoint.y + 28}px`,
-        '--cursor-first-x': `${westPoint.x - 2}px`,
-        '--cursor-first-y': `${westPoint.y + 5}px`,
-        '--cursor-second-x': `${eastPoint.x - 2}px`,
-        '--cursor-second-y': `${eastPoint.y + 5}px`,
-        '--cursor-center-x': `${centerPoint.x - 2}px`,
-        '--cursor-center-y': `${centerPoint.y + 5}px`,
-      } as CSSProperties}
     >
       <g className="grid">
         {RULE_POSITIONS.map((position) => {
@@ -272,12 +375,12 @@ function MiniRuleBoard({
         })}
       </g>
       <g className="mini-off-board-markers">
-        {tiles
+        {state.tiles
           .filter((tile) => tile.offBoard)
           .map((tile) => {
             const point = miniPoint(tile.position)
             return (
-              <g key={`${tile.position}-off`} className="mini-off-board" transform={`translate(${point.x} ${point.y})`}>
+              <g key={`${tile.id}-off`} className="mini-off-board" transform={`translate(${point.x} ${point.y})`}>
                 <polygon points={hexPoints(MINI_HEX_SIZE - 1)} />
                 {tile.mark && (
                   <text aria-hidden="true" textAnchor="middle" dominantBaseline="central">
@@ -289,25 +392,24 @@ function MiniRuleBoard({
           })}
       </g>
       <g className="marbles">
-        {RULE_POSITIONS.map((position) => {
-          const tile = tileByPosition.get(position)
-          if (!tile?.type) {
+        {state.tiles.map((tile) => {
+          if (!tile.type) {
             return null
           }
 
-          const point = miniPoint(position)
+          const point = miniPoint(tile.position)
           const mark = tile.mark ?? MARBLE_MARKS[tile.type]
           return (
             <g
-              key={position}
-              className={`marble position-${position} marble-${tile.type} is-free ${tile.selected ? 'is-selected' : ''} ${
-                tile.matchCandidate ? 'is-match-candidate' : ''
-              } ${tile.locked ? 'is-locked' : ''}`}
+              key={tile.id}
+              className={`marble position-${tile.position} marble-${tile.type} is-free ${
+                tile.selected ? 'is-selected' : ''
+              } ${tile.matchCandidate ? 'is-match-candidate' : ''} ${tile.locked ? 'is-locked' : ''} ${
+                tile.hidden ? 'is-hidden' : ''
+              } ${tile.clearing ? 'is-clearing' : ''} ${tile.fading === 'in' ? 'is-fading-in' : ''}`}
               transform={`translate(${point.x} ${point.y})`}
             >
-              {(tile.matchCandidate || (animatedClearing && position === 'east')) && (
-                <polygon className="match-pulse" points={hexPoints(MINI_HEX_SIZE - 1)} />
-              )}
+              {tile.matchCandidate && <polygon className="match-pulse" points={hexPoints(MINI_HEX_SIZE - 1)} />}
               <polygon className="marble-face" points={hexPoints(MINI_HEX_SIZE - 5)} />
               {mark && (
                 <text aria-hidden="true" textAnchor="middle" dominantBaseline="central">
@@ -319,234 +421,25 @@ function MiniRuleBoard({
         })}
       </g>
       <g className="mini-board-labels">
-        {tiles
+        {state.tiles
           .filter((tile) => tile.mark && !tile.type && !tile.offBoard)
           .map((tile) => {
             const point = miniPoint(tile.position)
             return (
-              <text key={`${tile.position}-mark`} x={point.x} y={point.y} textAnchor="middle" dominantBaseline="central">
+              <text key={`${tile.id}-mark`} x={point.x} y={point.y} textAnchor="middle" dominantBaseline="central">
                 {tile.mark}
               </text>
             )
           })}
       </g>
-      {(animatedClearing || animatedUnlocking) && (
-        <g className="demo-cursor">
+      {cursorPoint && (
+        <g
+          className={`demo-cursor ${state.cursor?.pressing ? 'is-pressing' : ''}`}
+          transform={`translate(${cursorPoint.x} ${cursorPoint.y}) scale(${state.cursor?.pressing ? 0.86 : 1})`}
+        >
           <path d="M0 0 0 24 6.5 18 10.5 28 16 25.7 11.8 16.1 20 16.1Z" />
         </g>
       )}
-    </svg>
-  )
-}
-
-function MatchingDemoBoard({
-  pairs,
-  contextTiles = [],
-  className = '',
-}: {
-  pairs: Array<{ className: string; types: [MarbleType, MarbleType] }>
-  contextTiles?: MiniTile[]
-  className?: string
-}) {
-  const westPoint = miniPoint('west')
-  const eastPoint = miniPoint('east')
-
-  return (
-    <svg
-      className={`mini-rule-board match-demo-board ${className}`}
-      viewBox={`0 0 ${MINI_BOARD_WIDTH} ${MINI_BOARD_HEIGHT}`}
-      aria-hidden="true"
-      style={{
-        '--cursor-start-x': `${westPoint.x - 44}px`,
-        '--cursor-start-y': `${westPoint.y + 28}px`,
-        '--cursor-first-x': `${westPoint.x - 2}px`,
-        '--cursor-first-y': `${westPoint.y + 5}px`,
-        '--cursor-second-x': `${eastPoint.x - 2}px`,
-        '--cursor-second-y': `${eastPoint.y + 5}px`,
-      } as CSSProperties}
-    >
-      <g className="grid">
-        {RULE_POSITIONS.map((position) => {
-          const point = miniPoint(position)
-          return (
-            <polygon
-              key={position}
-              points={hexPoints(MINI_HEX_SIZE - 2)}
-              transform={`translate(${point.x} ${point.y})`}
-            />
-          )
-        })}
-      </g>
-      <g className="match-demo-context">
-        {contextTiles.map((tile) => {
-          const point = miniPoint(tile.position)
-          const mark = tile.mark ?? (tile.type ? MARBLE_MARKS[tile.type] : undefined)
-          return (
-            <g
-              key={`${tile.position}-${tile.type ?? tile.mark}`}
-              className={`marble position-${tile.position} ${tile.type ? `marble-${tile.type}` : ''}`}
-              transform={`translate(${point.x} ${point.y})`}
-            >
-              <polygon className="marble-face" points={hexPoints(MINI_HEX_SIZE - 5)} />
-              {mark && (
-                <text aria-hidden="true" textAnchor="middle" dominantBaseline="central">
-                  {mark}
-                </text>
-              )}
-            </g>
-          )
-        })}
-      </g>
-      <g className="match-demo-pairs">
-        {pairs.map((pair) => (
-          <g key={pair.className} className={`match-demo-pair ${pair.className}`}>
-            {(['west', 'east'] as const).map((position, index) => {
-              const point = miniPoint(position)
-              const type = pair.types[index]
-              const mark = MARBLE_MARKS[type]
-              return (
-                <g
-                  key={`${pair.className}-${position}`}
-                  className={`marble position-${position} marble-${type} is-free ${
-                    position === 'west' ? 'is-demo-selected' : 'is-demo-target'
-                  }`}
-                  transform={`translate(${point.x} ${point.y})`}
-                >
-                  {position === 'east' && <polygon className="match-pulse" points={hexPoints(MINI_HEX_SIZE - 1)} />}
-                  <polygon className="marble-face" points={hexPoints(MINI_HEX_SIZE - 5)} />
-                  {mark && (
-                    <text aria-hidden="true" textAnchor="middle" dominantBaseline="central">
-                      {mark}
-                    </text>
-                  )}
-                </g>
-              )
-            })}
-          </g>
-        ))}
-      </g>
-      <g className="demo-cursor">
-        <path d="M0 0 0 24 6.5 18 10.5 28 16 25.7 11.8 16.1 20 16.1Z" />
-      </g>
-    </svg>
-  )
-}
-
-function ColorMatchDemoBoard() {
-  const pairs: Array<{ className: string; types: [MarbleType, MarbleType] }> = [
-    { className: 'is-red-pair', types: ['fire', 'fire'] },
-    { className: 'is-blue-pair', types: ['water', 'water'] },
-    { className: 'is-green-rainbow-pair', types: ['earth', 'salt'] },
-    { className: 'is-rainbow-pair', types: ['salt', 'salt'] },
-  ]
-
-  return <MatchingDemoBoard pairs={pairs} className="color-match-demo-board" />
-}
-
-function PolarityMatchDemoBoard() {
-  return (
-    <MatchingDemoBoard
-      pairs={[{ className: 'is-polarity-pair', types: ['vitae', 'mors'] }]}
-      contextTiles={[
-        { position: 'southWest', type: 'earth' },
-        { position: 'northEast', type: 'air' },
-      ]}
-      className="polarity-match-demo-board"
-    />
-  )
-}
-
-function MiniDemoMarble({
-  position,
-  type,
-  className = '',
-  matchCandidate = false,
-}: {
-  position: RulePosition
-  type: MarbleType
-  className?: string
-  matchCandidate?: boolean
-}) {
-  const point = miniPoint(position)
-  const mark = MARBLE_MARKS[type]
-
-  return (
-    <g
-      className={`marble position-${position} marble-${type} ${className}`}
-      transform={`translate(${point.x} ${point.y})`}
-    >
-      {matchCandidate && <polygon className="match-pulse" points={hexPoints(MINI_HEX_SIZE - 1)} />}
-      <polygon className="marble-face" points={hexPoints(MINI_HEX_SIZE - 5)} />
-      {mark && (
-        <text aria-hidden="true" textAnchor="middle" dominantBaseline="central">
-          {mark}
-        </text>
-      )}
-    </g>
-  )
-}
-
-function PurpleMatchDemoBoard() {
-  const cursorPoint = (position: RulePosition) => {
-    const point = miniPoint(position)
-    return {
-      x: `${point.x - 2}px`,
-      y: `${point.y + 5}px`,
-    }
-  }
-  const startPoint = miniPoint('east')
-  const twoPoint = cursorPoint('east')
-  const dotTwoPoint = cursorPoint('northEast')
-  const onePoint = cursorPoint('southWest')
-  const dotOnePoint = cursorPoint('northWest')
-  const zeroPoint = cursorPoint('center')
-
-  return (
-    <svg
-      className="mini-rule-board purple-match-demo-board"
-      viewBox={`0 0 ${MINI_BOARD_WIDTH} ${MINI_BOARD_HEIGHT}`}
-      aria-hidden="true"
-    >
-      <g className="grid">
-        {RULE_POSITIONS.map((position) => {
-          const point = miniPoint(position)
-          return (
-            <polygon
-              key={position}
-              points={hexPoints(MINI_HEX_SIZE - 2)}
-              transform={`translate(${point.x} ${point.y})`}
-            />
-          )
-        })}
-      </g>
-
-      <MiniDemoMarble position="east" type="copper" className="purple-demo-two" />
-      <MiniDemoMarble position="northEast" type="quicksilver" className="purple-demo-dot-two" matchCandidate />
-      <MiniDemoMarble position="southWest" type="silver" className="purple-demo-one" />
-      <MiniDemoMarble position="northWest" type="quicksilver" className="purple-demo-dot-one" matchCandidate />
-      <MiniDemoMarble position="center" type="gold" className="purple-demo-zero" />
-
-      <g
-        className="demo-cursor purple-demo-cursor"
-        style={
-          {
-            '--cursor-start-x': `${startPoint.x - 44}px`,
-            '--cursor-start-y': `${startPoint.y + 28}px`,
-            '--cursor-two-x': twoPoint.x,
-            '--cursor-two-y': twoPoint.y,
-            '--cursor-dot-two-x': dotTwoPoint.x,
-            '--cursor-dot-two-y': dotTwoPoint.y,
-            '--cursor-one-x': onePoint.x,
-            '--cursor-one-y': onePoint.y,
-            '--cursor-dot-one-x': dotOnePoint.x,
-            '--cursor-dot-one-y': dotOnePoint.y,
-            '--cursor-zero-x': zeroPoint.x,
-            '--cursor-zero-y': zeroPoint.y,
-          } as CSSProperties
-        }
-      >
-        <path d="M0 0 0 24 6.5 18 10.5 28 16 25.7 11.8 16.1 20 16.1Z" />
-      </g>
     </svg>
   )
 }
@@ -653,13 +546,7 @@ function RulesModal({ onClose }: { onClose: () => void }) {
             <h2 id="rules-title">Clearing Tiles</h2>
             <div className="rules-cards one-up">
               <article>
-                <MiniRuleBoard
-                  animatedClearing
-                  tiles={[
-                    { position: 'west', type: 'water' },
-                    { position: 'east', type: 'water' },
-                  ]}
-                />
+                <MiniDemoBoard scene={CLEARING_SCENE} className="clearing-demo-board" />
               </article>
             </div>
             <p>
@@ -672,18 +559,7 @@ function RulesModal({ onClose }: { onClose: () => void }) {
             <h2>Unlocking Tiles</h2>
             <div className="rules-cards one-up">
               <article>
-                <MiniRuleBoard
-                  animatedUnlocking
-                  tiles={[
-                    { position: 'northWest', type: 'fire' },
-                    { position: 'northEast', type: 'fire' },
-                    { position: 'west', type: 'fire' },
-                    { position: 'center', type: 'water', locked: true },
-                    { position: 'east', type: 'fire' },
-                    { position: 'southWest', type: 'fire' },
-                    { position: 'southEast', type: 'fire' },
-                  ]}
-                />
+                <MiniDemoBoard scene={UNLOCKING_SCENE} className="unlocking-demo-board" />
               </article>
             </div>
             <p>
@@ -698,7 +574,7 @@ function RulesModal({ onClose }: { onClose: () => void }) {
           <div className="combination-grid">
             <article className="color-match-demo">
               <div className="color-match-frame">
-                <ColorMatchDemoBoard />
+                <MiniDemoBoard scene={COLOR_MATCH_SCENE} className="color-match-demo-board" />
               </div>
               <div className="color-match-copy">
                 <p>The basic tiles match with other tiles of the same color.</p>
@@ -710,14 +586,14 @@ function RulesModal({ onClose }: { onClose: () => void }) {
 
             <article className="polarity-match-demo">
               <div className="color-match-frame">
-                <PolarityMatchDemoBoard />
+                <MiniDemoBoard scene={POLARITY_MATCH_SCENE} className="polarity-match-demo-board" />
               </div>
               <p>+ and − only match with each other.</p>
             </article>
 
             <article className="purple-match-demo">
               <div className="color-match-frame">
-                <PurpleMatchDemoBoard />
+                <MiniDemoBoard scene={PURPLE_MATCH_SCENE} className="purple-match-demo-board" />
               </div>
               <p>
                 The purple numbers match with ● in <strong>descending order</strong>. 0 clears alone.
