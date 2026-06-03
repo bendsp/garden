@@ -1124,29 +1124,29 @@ button:disabled {
 }
 
 @keyframes color-match-pair-one {
-  0% {
-    opacity: 0;
-  }
-
-  2%,
+  0%,
   22% {
     opacity: 1;
   }
 
   22.5%,
-  100% {
+  97% {
     opacity: 0;
+  }
+
+  99%,
+  100% {
+    opacity: 1;
   }
 }
 
 @keyframes color-match-pair-two {
   0%,
-  24.5%,
-  25% {
+  22% {
     opacity: 0;
   }
 
-  27%,
+  24%,
   47% {
     opacity: 1;
   }
@@ -1159,12 +1159,11 @@ button:disabled {
 
 @keyframes color-match-pair-three {
   0%,
-  49.5%,
-  50% {
+  47% {
     opacity: 0;
   }
 
-  52%,
+  49%,
   72% {
     opacity: 1;
   }
@@ -1177,12 +1176,11 @@ button:disabled {
 
 @keyframes color-match-pair-four {
   0%,
-  74.5%,
-  75% {
+  72% {
     opacity: 0;
   }
 
-  77%,
+  74%,
   97% {
     opacity: 1;
   }
