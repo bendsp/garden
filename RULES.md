@@ -45,7 +45,7 @@ Canonical counts:
 4 Rainbow
 4 +
 4 −
-5 Dot
+5 Dots
 1 Purple 5
 1 Purple 4
 1 Purple 3
@@ -54,7 +54,7 @@ Canonical counts:
 1 Purple 0
 ```
 
-This implementation renders tiles as flat colored hexagons. Primary colors are color-only, rainbow uses a rainbow gradient to indicate its wildcard role, +/− use their symbols, and dot uses a filled circle:
+This implementation renders tiles as flat colored hexagons. Primary colors are color-only, rainbow uses a rainbow gradient to indicate its wildcard role, +/− use their symbols, and dots use a filled circle:
 
 ```text
 Red    Red primary color
@@ -62,7 +62,7 @@ Yellow Yellow primary color
 Green  Green primary color
 Blue   Blue primary color
 Rainbow Rainbow
-●      Dot
+●      Dots
 ```
 
 Purples count down from the first merge to the final 0 clear:
@@ -139,7 +139,7 @@ Rainbow + Rainbow
 + + −
 ```
 
-Purples match dot (●), but only in order:
+Purples match dots (●), but only in order:
 
 ```text
 Purple 5 + ●
@@ -154,9 +154,9 @@ Purple 0 alone
 
 The purple state starts at Purple 5.
 
-Only the current purple is selectable. Later purples are locked even if physically free. Dot (●) may only form a pair with the currently unlocked purple.
+Only the current purple is selectable. Later purples are locked even if physically free. Dots (●) may only form a pair with the currently unlocked purple.
 
-After removing the current purple with dot (●), unlock the next purple:
+After removing the current purple with dots (●), unlock the next purple:
 
 ```text
 Purple 5 -> Purple 4 -> Purple 3 -> Purple 2 -> Purple 1 -> Purple 0
@@ -202,7 +202,7 @@ The generated move bag contains exactly 28 removals:
 16 primary-color pairs
 2 Rainbow + Rainbow pairs
 4 + / − pairs
-5 Purple + dot pairs
+5 Purple + dots pairs
 1 Purple 0 single
 ```
 
@@ -239,7 +239,7 @@ Type mapping:
 3  Red
 4  Blue
 5  Green
-6  Dot
+6  Dots
 7  Purple 0
 8  Purple 1
 9  Purple 2
@@ -260,7 +260,7 @@ Future agents should preserve tests for:
 4. `isFree` requires three contiguous empty neighbor spaces.
 5. Off-board neighbor positions count as empty.
 6. Pair matching follows the table above.
-7. Later purples are locked until the current purple is removed with dot (●).
-8. Purple 0 is a single-tile move only after Purple 1 has been removed with dot (●).
+7. Later purples are locked until the current purple is removed with dots (●).
+8. Purple 0 is a single-tile move only after Purple 1 has been removed with dots (●).
 9. Generated boards have a replayable clearing solution before they are written into `levels.dat`.
 10. `levels.dat` parsing validates size, coordinates, counts, and center Purple 0.

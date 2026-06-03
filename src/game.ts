@@ -65,7 +65,7 @@ export const MARBLE_LABELS: Record<MarbleType, string> = {
   salt: 'Rainbow',
   vitae: '+',
   mors: '−',
-  quicksilver: 'Dot',
+  quicksilver: 'Dots',
   lead: 'Purple 5',
   tin: 'Purple 4',
   iron: 'Purple 3',

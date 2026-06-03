@@ -638,7 +638,7 @@ function RulesModal({ onClose }: { onClose: () => void }) {
                 <MiniDemoBoard scene={PURPLE_MATCH_SCENE} className="purple-match-demo-board" />
               </div>
               <p>
-                The purple numbers match with ● in <strong>descending order</strong>. 0 clears alone.
+                The purple numbers match with dots in <strong>descending order</strong>. 0 clears alone.
               </p>
             </article>
           </div>
