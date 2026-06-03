@@ -486,29 +486,21 @@ function MiniDemoMarble({
   )
 }
 
-function cursorVars(first: RulePosition, second: RulePosition) {
-  const firstPoint = miniPoint(first)
-  const secondPoint = miniPoint(second)
-
-  return {
-    '--cursor-start-x': `${firstPoint.x - 44}px`,
-    '--cursor-start-y': `${firstPoint.y + 28}px`,
-    '--cursor-first-x': `${firstPoint.x - 2}px`,
-    '--cursor-first-y': `${firstPoint.y + 5}px`,
-    '--cursor-second-x': `${secondPoint.x - 2}px`,
-    '--cursor-second-y': `${secondPoint.y + 5}px`,
-  } as CSSProperties
-}
-
-function DemoCursor() {
-  return (
-    <g className="demo-cursor">
-      <path d="M0 0 0 24 6.5 18 10.5 28 16 25.7 11.8 16.1 20 16.1Z" />
-    </g>
-  )
-}
-
 function PurpleMatchDemoBoard() {
+  const cursorPoint = (position: RulePosition) => {
+    const point = miniPoint(position)
+    return {
+      x: `${point.x - 2}px`,
+      y: `${point.y + 5}px`,
+    }
+  }
+  const startPoint = miniPoint('east')
+  const twoPoint = cursorPoint('east')
+  const dotTwoPoint = cursorPoint('northEast')
+  const onePoint = cursorPoint('southWest')
+  const dotOnePoint = cursorPoint('northWest')
+  const zeroPoint = cursorPoint('center')
+
   return (
     <svg
       className="mini-rule-board purple-match-demo-board"
@@ -528,31 +520,32 @@ function PurpleMatchDemoBoard() {
         })}
       </g>
 
-      <g className="purple-demo-static-dot-one">
-        <MiniDemoMarble position="northWest" type="quicksilver" />
-      </g>
-      <g className="purple-demo-locked-one">
-        <MiniDemoMarble position="southWest" type="silver" />
-      </g>
-      <g className="purple-demo-locked-zero">
-        <MiniDemoMarble position="center" type="gold" />
-      </g>
+      <MiniDemoMarble position="east" type="copper" className="purple-demo-two" />
+      <MiniDemoMarble position="northEast" type="quicksilver" className="purple-demo-dot-two" matchCandidate />
+      <MiniDemoMarble position="southWest" type="silver" className="purple-demo-one" />
+      <MiniDemoMarble position="northWest" type="quicksilver" className="purple-demo-dot-one" matchCandidate />
+      <MiniDemoMarble position="center" type="gold" className="purple-demo-zero" />
 
-      <g className="purple-demo-stage purple-demo-stage-two" style={cursorVars('east', 'northEast')}>
-        <MiniDemoMarble position="east" type="copper" className="is-demo-selected" />
-        <MiniDemoMarble position="northEast" type="quicksilver" className="is-demo-target" matchCandidate />
-        <DemoCursor />
-      </g>
-
-      <g className="purple-demo-stage purple-demo-stage-one" style={cursorVars('southWest', 'northWest')}>
-        <MiniDemoMarble position="southWest" type="silver" className="is-demo-selected" />
-        <MiniDemoMarble position="northWest" type="quicksilver" className="is-demo-target" matchCandidate />
-        <DemoCursor />
-      </g>
-
-      <g className="purple-demo-stage purple-demo-stage-zero" style={cursorVars('center', 'center')}>
-        <MiniDemoMarble position="center" type="gold" className="is-demo-selected" />
-        <DemoCursor />
+      <g
+        className="demo-cursor purple-demo-cursor"
+        style={
+          {
+            '--cursor-start-x': `${startPoint.x - 44}px`,
+            '--cursor-start-y': `${startPoint.y + 28}px`,
+            '--cursor-two-x': twoPoint.x,
+            '--cursor-two-y': twoPoint.y,
+            '--cursor-dot-two-x': dotTwoPoint.x,
+            '--cursor-dot-two-y': dotTwoPoint.y,
+            '--cursor-one-x': onePoint.x,
+            '--cursor-one-y': onePoint.y,
+            '--cursor-dot-one-x': dotOnePoint.x,
+            '--cursor-dot-one-y': dotOnePoint.y,
+            '--cursor-zero-x': zeroPoint.x,
+            '--cursor-zero-y': zeroPoint.y,
+          } as CSSProperties
+        }
+      >
+        <path d="M0 0 0 24 6.5 18 10.5 28 16 25.7 11.8 16.1 20 16.1Z" />
       </g>
     </svg>
   )
