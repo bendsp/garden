@@ -565,7 +565,9 @@ function RulesModal({ onClose }: { onClose: () => void }) {
                 />
               </article>
             </div>
-            <p>Your goal is to clear the board.</p>
+            <p>
+              Your goal is to <strong>clear the board</strong>.
+            </p>
             <p>Select a free tile, and then pick a matching tile to remove them both.</p>
           </section>
 
@@ -602,8 +604,10 @@ function RulesModal({ onClose }: { onClose: () => void }) {
                 <ColorMatchDemoBoard />
               </div>
               <div className="color-match-copy">
-                <p>The primary colors match with other tiles of the same color.</p>
-                <p>Rainbow matches with any primary color or with itself.</p>
+                <p>The basic tiles match with other tiles of the same color.</p>
+                <p>
+                  Rainbow matches with any basic tile <strong>or with itself</strong>.
+                </p>
               </div>
             </article>
 
@@ -628,7 +632,9 @@ function RulesModal({ onClose }: { onClose: () => void }) {
                 ))}
                 <RuleHex type="gold" />
               </div>
-              <p>The purple numbers match with ● in descending order. 0 clears alone.</p>
+              <p>
+                The purple numbers match with ● in <strong>descending order</strong>. 0 clears alone.
+              </p>
             </article>
           </div>
         </section>
