@@ -827,43 +827,43 @@ button:disabled {
 
 .match-demo-pair .marble {
   opacity: 1;
-  animation: match-demo-remove 2.2s infinite;
+  animation: clearing-demo-remove 4.6s infinite;
 }
 
 .color-match-demo-board .is-red-pair {
-  animation: color-match-pair-one 8.8s infinite;
+  animation: color-match-pair-one 18.4s infinite;
 }
 
 .color-match-demo-board .is-blue-pair {
-  animation: color-match-pair-two 8.8s infinite;
+  animation: color-match-pair-two 18.4s infinite;
 }
 
 .color-match-demo-board .is-green-rainbow-pair {
-  animation: color-match-pair-three 8.8s infinite;
+  animation: color-match-pair-three 18.4s infinite;
 }
 
 .color-match-demo-board .is-rainbow-pair {
-  animation: color-match-pair-four 8.8s infinite;
+  animation: color-match-pair-four 18.4s infinite;
 }
 
 .polarity-match-demo-board .is-polarity-pair {
-  animation: polarity-match-pair 2.2s infinite;
+  animation: polarity-match-pair 4.6s infinite;
 }
 
 .match-demo-board .is-demo-selected .marble-face {
-  animation: color-match-selected 2.2s infinite;
+  animation: clearing-demo-select 4.6s infinite;
 }
 
 .match-demo-board .is-demo-target .marble-face {
-  animation: color-match-target 2.2s infinite;
+  animation: clearing-demo-ready 4.6s infinite;
 }
 
 .match-demo-board .match-pulse {
-  animation: color-match-candidate 2.2s infinite;
+  animation: clearing-demo-candidate 4.6s infinite;
 }
 
 .match-demo-board .demo-cursor {
-  animation: color-match-cursor 2.2s infinite;
+  animation: clearing-demo-cursor 4.6s infinite;
 }
 
 .color-match-copy {
@@ -1125,11 +1125,11 @@ button:disabled {
 
 @keyframes color-match-pair-one {
   0%,
-  23% {
+  24.5% {
     opacity: 1;
   }
 
-  24%,
+  25%,
   100% {
     opacity: 0;
   }
@@ -1137,16 +1137,16 @@ button:disabled {
 
 @keyframes color-match-pair-two {
   0%,
-  24% {
+  24.5% {
     opacity: 0;
   }
 
   25%,
-  48% {
+  49.5% {
     opacity: 1;
   }
 
-  49%,
+  50%,
   100% {
     opacity: 0;
   }
@@ -1154,16 +1154,16 @@ button:disabled {
 
 @keyframes color-match-pair-three {
   0%,
-  49% {
+  49.5% {
     opacity: 0;
   }
 
   50%,
-  73% {
+  74.5% {
     opacity: 1;
   }
 
-  74%,
+  75%,
   100% {
     opacity: 0;
   }
@@ -1171,154 +1171,24 @@ button:disabled {
 
 @keyframes color-match-pair-four {
   0%,
-  74% {
+  74.5% {
     opacity: 0;
   }
 
   75%,
-  98% {
+  99.5% {
     opacity: 1;
   }
 
-  99%,
   100% {
-    opacity: 0;
+    opacity: 1;
   }
 }
 
 @keyframes polarity-match-pair {
   0%,
-  98% {
-    opacity: 1;
-  }
-
-  99%,
-  100% {
-    opacity: 0;
-  }
-}
-
-@keyframes color-match-cursor {
-  0%,
-  8% {
-    opacity: 0;
-    transform: translate(var(--cursor-start-x), var(--cursor-start-y)) scale(1);
-  }
-
-  14%,
-  24% {
-    opacity: 1;
-    transform: translate(var(--cursor-first-x), var(--cursor-first-y)) scale(1);
-  }
-
-  28% {
-    opacity: 1;
-    transform: translate(var(--cursor-first-x), var(--cursor-first-y)) scale(0.86);
-  }
-
-  33% {
-    opacity: 1;
-    transform: translate(var(--cursor-first-x), var(--cursor-first-y)) scale(1);
-  }
-
-  52%,
-  62% {
-    opacity: 1;
-    transform: translate(var(--cursor-second-x), var(--cursor-second-y)) scale(1);
-  }
-
-  66% {
-    opacity: 1;
-    transform: translate(var(--cursor-second-x), var(--cursor-second-y)) scale(0.86);
-  }
-
-  70%,
-  78% {
-    opacity: 1;
-    transform: translate(var(--cursor-second-x), var(--cursor-second-y)) scale(1);
-  }
-
-  84%,
-  100% {
-    opacity: 0;
-    transform: translate(var(--cursor-second-x), var(--cursor-second-y)) scale(1);
-  }
-}
-
-@keyframes match-demo-remove {
-  0%,
-  70% {
-    opacity: 1;
-  }
-
-  78%,
-  88% {
-    opacity: 0;
-  }
-
-  96%,
   100% {
     opacity: 1;
-  }
-}
-
-@keyframes color-match-selected {
-  0%,
-  27% {
-    stroke: rgba(25, 25, 25, 0.3);
-    stroke-width: 2.2;
-  }
-
-  32%,
-  70% {
-    stroke: #050505;
-    stroke-width: 4.2;
-  }
-
-  78%,
-  100% {
-    stroke: rgba(25, 25, 25, 0.3);
-    stroke-width: 2.2;
-  }
-}
-
-@keyframes color-match-target {
-  0%,
-  34% {
-    filter: none;
-    stroke: rgba(25, 25, 25, 0.3);
-    stroke-width: 2.2;
-  }
-
-  40%,
-  68% {
-    filter: drop-shadow(0 0 7px rgba(255, 255, 255, 0.58)) drop-shadow(0 0 15px rgba(246, 208, 83, 0.34));
-    stroke: rgba(255, 255, 255, 0.92);
-    stroke-width: 3.5;
-  }
-
-  74%,
-  100% {
-    filter: none;
-    stroke: rgba(25, 25, 25, 0.3);
-    stroke-width: 2.2;
-  }
-}
-
-@keyframes color-match-candidate {
-  0%,
-  34% {
-    opacity: 0;
-  }
-
-  40%,
-  68% {
-    opacity: 1;
-  }
-
-  74%,
-  100% {
-    opacity: 0;
   }
 }
 
