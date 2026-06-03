@@ -373,9 +373,11 @@ function MiniRuleBoard({
 
 function MatchingDemoBoard({
   pairs,
+  contextTiles = [],
   className = '',
 }: {
   pairs: Array<{ className: string; types: [MarbleType, MarbleType] }>
+  contextTiles?: MiniTile[]
   className?: string
 }) {
   const westPoint = miniPoint('west')
@@ -404,6 +406,26 @@ function MatchingDemoBoard({
               points={hexPoints(MINI_HEX_SIZE - 2)}
               transform={`translate(${point.x} ${point.y})`}
             />
+          )
+        })}
+      </g>
+      <g className="match-demo-context">
+        {contextTiles.map((tile) => {
+          const point = miniPoint(tile.position)
+          const mark = tile.mark ?? (tile.type ? MARBLE_MARKS[tile.type] : undefined)
+          return (
+            <g
+              key={`${tile.position}-${tile.type ?? tile.mark}`}
+              className={`marble position-${tile.position} ${tile.type ? `marble-${tile.type}` : ''}`}
+              transform={`translate(${point.x} ${point.y})`}
+            >
+              <polygon className="marble-face" points={hexPoints(MINI_HEX_SIZE - 5)} />
+              {mark && (
+                <text aria-hidden="true" textAnchor="middle" dominantBaseline="central">
+                  {mark}
+                </text>
+              )}
+            </g>
           )
         })}
       </g>
@@ -457,6 +479,10 @@ function PolarityMatchDemoBoard() {
   return (
     <MatchingDemoBoard
       pairs={[{ className: 'is-polarity-pair', types: ['vitae', 'mors'] }]}
+      contextTiles={[
+        { position: 'southWest', type: 'earth' },
+        { position: 'northEast', type: 'air' },
+      ]}
       className="polarity-match-demo-board"
     />
   )
