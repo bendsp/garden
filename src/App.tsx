@@ -605,8 +605,8 @@ function RulesModal({ onClose }: { onClose: () => void }) {
               </article>
             </div>
             <p>
-              A tile is only free if it has <strong>3 contiguous</strong> empty spaces next to it. Spaces off the
-              board count as empty spaces.
+              A tile is only free if it has <strong>3 contiguous</strong> empty spaces next to it. Tiles outside the
+              board count as empty.
             </p>
           </section>
         </div>
