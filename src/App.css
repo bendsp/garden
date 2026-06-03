@@ -748,11 +748,165 @@ button:disabled {
   font-size: 20px;
 }
 
+.mini-rule-board.is-clearing-demo .marble {
+  animation: clearing-demo-remove 4.6s infinite;
+}
+
+.mini-rule-board.is-clearing-demo .position-west .marble-face {
+  animation: clearing-demo-select 4.6s infinite;
+}
+
+.mini-rule-board.is-clearing-demo .position-east .match-pulse {
+  animation: clearing-demo-candidate 4.6s infinite;
+}
+
+.mini-rule-board.is-clearing-demo .position-east .marble-face {
+  animation: clearing-demo-ready 4.6s infinite;
+}
+
+.demo-cursor {
+  color: #191919;
+  filter: drop-shadow(0 2px 2px rgba(25, 25, 25, 0.28));
+  pointer-events: none;
+  transform: translate(var(--cursor-start-x), var(--cursor-start-y));
+  animation: clearing-demo-cursor 4.6s infinite;
+}
+
+.demo-cursor path {
+  fill: #ffffff;
+  stroke: currentColor;
+  stroke-linejoin: round;
+  stroke-width: 2.2;
+}
+
 .mini-board-labels text,
 .mini-off-board text {
   fill: #4a453f;
   font-size: 15px;
   font-weight: 700;
+}
+
+@keyframes clearing-demo-cursor {
+  0%,
+  8% {
+    opacity: 0;
+    transform: translate(var(--cursor-start-x), var(--cursor-start-y)) scale(1);
+  }
+
+  14%,
+  24% {
+    opacity: 1;
+    transform: translate(var(--cursor-first-x), var(--cursor-first-y)) scale(1);
+  }
+
+  28% {
+    opacity: 1;
+    transform: translate(var(--cursor-first-x), var(--cursor-first-y)) scale(0.86);
+  }
+
+  33% {
+    opacity: 1;
+    transform: translate(var(--cursor-first-x), var(--cursor-first-y)) scale(1);
+  }
+
+  52%,
+  62% {
+    opacity: 1;
+    transform: translate(var(--cursor-second-x), var(--cursor-second-y)) scale(1);
+  }
+
+  66% {
+    opacity: 1;
+    transform: translate(var(--cursor-second-x), var(--cursor-second-y)) scale(0.86);
+  }
+
+  71% {
+    opacity: 1;
+    transform: translate(var(--cursor-second-x), var(--cursor-second-y)) scale(1);
+  }
+
+  78%,
+  100% {
+    opacity: 0;
+    transform: translate(var(--cursor-second-x), var(--cursor-second-y)) scale(1);
+  }
+}
+
+@keyframes clearing-demo-select {
+  0%,
+  27% {
+    stroke: rgba(25, 25, 25, 0.3);
+    stroke-width: 2.2;
+  }
+
+  32%,
+  70% {
+    stroke: #050505;
+    stroke-width: 4.2;
+  }
+
+  78%,
+  100% {
+    stroke: rgba(25, 25, 25, 0.3);
+    stroke-width: 2.2;
+  }
+}
+
+@keyframes clearing-demo-candidate {
+  0%,
+  34% {
+    opacity: 0;
+  }
+
+  40%,
+  68% {
+    opacity: 1;
+  }
+
+  74%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes clearing-demo-ready {
+  0%,
+  34% {
+    filter: none;
+    stroke: rgba(25, 25, 25, 0.3);
+    stroke-width: 2.2;
+  }
+
+  40%,
+  68% {
+    filter: drop-shadow(0 0 7px rgba(255, 255, 255, 0.58)) drop-shadow(0 0 15px rgba(246, 208, 83, 0.34));
+    stroke: rgba(255, 255, 255, 0.92);
+    stroke-width: 3.5;
+  }
+
+  74%,
+  100% {
+    filter: none;
+    stroke: rgba(25, 25, 25, 0.3);
+    stroke-width: 2.2;
+  }
+}
+
+@keyframes clearing-demo-remove {
+  0%,
+  70% {
+    opacity: 1;
+  }
+
+  78%,
+  88% {
+    opacity: 0;
+  }
+
+  96%,
+  100% {
+    opacity: 1;
+  }
 }
 
 .mini-off-board polygon {

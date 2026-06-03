@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
+import { Fragment, type CSSProperties, useCallback, useEffect, useRef, useState } from 'react'
 import './App.css'
 import { playLossSound, playMatchSound, playSelectSound, playWinSound } from './audio'
 import {
@@ -260,10 +260,24 @@ function miniPoint(position: RulePosition) {
   }
 }
 
-function MiniRuleBoard({ tiles }: { tiles: MiniTile[] }) {
+function MiniRuleBoard({ tiles, animatedClearing = false }: { tiles: MiniTile[]; animatedClearing?: boolean }) {
   const tileByPosition = new Map(tiles.map((tile) => [tile.position, tile]))
+  const westPoint = miniPoint('west')
+  const eastPoint = miniPoint('east')
   return (
-    <svg className="mini-rule-board" viewBox={`0 0 ${MINI_BOARD_WIDTH} ${MINI_BOARD_HEIGHT}`} aria-hidden="true">
+    <svg
+      className={`mini-rule-board ${animatedClearing ? 'is-clearing-demo' : ''}`}
+      viewBox={`0 0 ${MINI_BOARD_WIDTH} ${MINI_BOARD_HEIGHT}`}
+      aria-hidden="true"
+      style={{
+        '--cursor-start-x': `${westPoint.x - 44}px`,
+        '--cursor-start-y': `${westPoint.y + 28}px`,
+        '--cursor-first-x': `${westPoint.x - 2}px`,
+        '--cursor-first-y': `${westPoint.y + 5}px`,
+        '--cursor-second-x': `${eastPoint.x - 2}px`,
+        '--cursor-second-y': `${eastPoint.y + 5}px`,
+      } as CSSProperties}
+    >
       <g className="grid">
         {RULE_POSITIONS.map((position) => {
           const point = miniPoint(position)
@@ -305,12 +319,14 @@ function MiniRuleBoard({ tiles }: { tiles: MiniTile[] }) {
           return (
             <g
               key={position}
-              className={`marble marble-${tile.type} is-free ${tile.selected ? 'is-selected' : ''} ${
+              className={`marble position-${position} marble-${tile.type} is-free ${tile.selected ? 'is-selected' : ''} ${
                 tile.matchCandidate ? 'is-match-candidate' : ''
               } ${tile.locked ? 'is-locked' : ''}`}
               transform={`translate(${point.x} ${point.y})`}
             >
-              {tile.matchCandidate && <polygon className="match-pulse" points={hexPoints(MINI_HEX_SIZE - 1)} />}
+              {(tile.matchCandidate || (animatedClearing && position === 'east')) && (
+                <polygon className="match-pulse" points={hexPoints(MINI_HEX_SIZE - 1)} />
+              )}
               <polygon className="marble-face" points={hexPoints(MINI_HEX_SIZE - 5)} />
               {mark && (
                 <text aria-hidden="true" textAnchor="middle" dominantBaseline="central">
@@ -333,6 +349,11 @@ function MiniRuleBoard({ tiles }: { tiles: MiniTile[] }) {
             )
           })}
       </g>
+      {animatedClearing && (
+        <g className="demo-cursor">
+          <path d="M0 0 0 24 6.5 18 10.5 28 16 25.7 11.8 16.1 20 16.1Z" />
+        </g>
+      )}
     </svg>
   )
 }
@@ -453,9 +474,10 @@ function RulesModal({ onClose }: { onClose: () => void }) {
             <div className="rules-cards one-up">
               <article>
                 <MiniRuleBoard
+                  animatedClearing
                   tiles={[
-                    { position: 'west', type: 'water', selected: true },
-                    { position: 'east', type: 'water', matchCandidate: true },
+                    { position: 'west', type: 'water' },
+                    { position: 'east', type: 'water' },
                   ]}
                 />
               </article>
