@@ -917,6 +917,12 @@ button:disabled {
   text-align: center;
 }
 
+.result-win {
+  width: min(560px, calc(100vw - 36px));
+  gap: 18px;
+  padding: 30px;
+}
+
 .result h2 {
   margin: 0;
   color: var(--ink);
@@ -924,10 +930,49 @@ button:disabled {
   line-height: 1.1;
 }
 
+.result-win h2 {
+  font-size: 34px;
+  letter-spacing: 0;
+}
+
 .result p {
   margin: 0;
   color: var(--muted);
   font-size: 14px;
+}
+
+.result-stats {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.result-stat-column {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.38);
+}
+
+.result-stat {
+  display: grid;
+  gap: 4px;
+}
+
+.result-stat span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.result-stat strong {
+  color: var(--ink);
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
 }
 
 .result button {
@@ -970,6 +1015,27 @@ button:disabled {
 
   .actions {
     gap: 5px;
+  }
+
+  .result-win {
+    padding: 22px;
+    gap: 14px;
+  }
+
+  .result-win h2 {
+    font-size: 28px;
+  }
+
+  .result-stats {
+    gap: 8px;
+  }
+
+  .result-stat-column {
+    padding: 10px 8px;
+  }
+
+  .result-stat strong {
+    font-size: 21px;
   }
 
   button {

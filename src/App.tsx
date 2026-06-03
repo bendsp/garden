@@ -38,6 +38,15 @@ const INVENTORY_GUIDE_TYPES: MarbleType[] = [
 let cachedLevelsBuffer: ArrayBuffer | null = null
 let levelsBufferRequest: Promise<ArrayBuffer> | null = null
 
+function readStoredNumber(key: string, fallback = 0) {
+  const stored = localStorage.getItem(key)
+  if (stored === null) {
+    return fallback
+  }
+  const value = Number(stored)
+  return Number.isFinite(value) ? value : fallback
+}
+
 function getBoardMetrics(padding: number) {
   return {
     width: HEX_WIDTH * 11 + padding * 2,
@@ -80,6 +89,14 @@ function formatTime(ms: number) {
   const minutes = Math.floor(totalSeconds / 60)
   const seconds = totalSeconds % 60
   return `${minutes}:${String(seconds).padStart(2, '0')}`
+}
+
+function formatPercentage(wins: number, losses: number) {
+  const total = wins + losses
+  if (total === 0) {
+    return '0%'
+  }
+  return `${Math.round((wins / total) * 100)}%`
 }
 
 function makeGame(buffer: ArrayBuffer) {
@@ -544,7 +561,12 @@ function RulesModal({ onClose }: { onClose: () => void }) {
 function App() {
   const [game, setGame] = useState<GameState | null>(null)
   const [loadError, setLoadError] = useState('')
-  const [wins, setWins] = useState(() => Number(localStorage.getItem('garden:wins') ?? '0'))
+  const [wins, setWins] = useState(() => readStoredNumber('garden:wins'))
+  const [losses, setLosses] = useState(() => readStoredNumber('garden:losses'))
+  const [bestTime, setBestTime] = useState(() => {
+    const stored = readStoredNumber('garden:best-time', Number.POSITIVE_INFINITY)
+    return Number.isFinite(stored) ? stored : undefined
+  })
   const [countedWin, setCountedWin] = useState<string | null>(null)
   const [rulesOpen, setRulesOpen] = useState(true)
   const [lossOpen, setLossOpen] = useState(false)
@@ -590,10 +612,23 @@ function App() {
     return buffer
   }, [])
 
+  function recordAbandonedLoss(currentGame: GameState | null) {
+    if (!currentGame?.timerStartedAt || currentGame.finishedAt) {
+      return
+    }
+
+    setLosses((current) => {
+      const next = current + 1
+      localStorage.setItem('garden:losses', String(next))
+      return next
+    })
+  }
+
   async function newGame() {
     try {
       const buffer = await loadLevelsBuffer()
       const preparedGame = nextGameRef.current ?? makeGame(buffer)
+      recordAbandonedLoss(game)
       nextGameRef.current = null
       setGame(activateGame(preparedGame))
       setLossOpen(false)
@@ -667,7 +702,9 @@ function App() {
   }, [hasNoLegalMoves])
 
   function recordWin(nextGame: GameState) {
-    if (!nextGame.finishedAt) {
+    const finishedAt = nextGame.finishedAt
+    const timerStartedAt = nextGame.timerStartedAt
+    if (!finishedAt || !timerStartedAt) {
       return
     }
 
@@ -680,6 +717,12 @@ function App() {
     setWins((current) => {
       const next = current + 1
       localStorage.setItem('garden:wins', String(next))
+      return next
+    })
+    setBestTime((current) => {
+      const elapsed = finishedAt - timerStartedAt
+      const next = current === undefined ? elapsed : Math.min(current, elapsed)
+      localStorage.setItem('garden:best-time', String(next))
       return next
     })
   }
@@ -793,6 +836,7 @@ function App() {
 
   const currentPurple = getUnlockedMetal(game.metalIndex)
   const elapsedMs = game.timerStartedAt ? (game.finishedAt ?? now) - game.timerStartedAt : 0
+  const winPercentage = formatPercentage(wins, losses)
   const purpleStateFor = (index: number) => {
     if (index < game.metalIndex) {
       return 'completed' as const
@@ -918,10 +962,30 @@ function App() {
 
       {game.finishedAt && (
         <section className="result-backdrop" aria-label="Win result">
-          <div className="result" role="dialog" aria-modal="true" aria-labelledby="win-title">
-            <h2 id="win-title">You won</h2>
-            <p>Time: {formatTime(elapsedMs)}</p>
-            <p>Games won: {wins}</p>
+          <div className="result result-win" role="dialog" aria-modal="true" aria-labelledby="win-title">
+            <h2 id="win-title">Board cleared!</h2>
+            <div className="result-stats" aria-label="Game statistics">
+              <div className="result-stat-column">
+                <p className="result-stat">
+                  <span>Time</span>
+                  <strong>{formatTime(elapsedMs)}</strong>
+                </p>
+                <p className="result-stat">
+                  <span>Best time</span>
+                  <strong>{bestTime === undefined ? '—' : formatTime(bestTime)}</strong>
+                </p>
+              </div>
+              <div className="result-stat-column">
+                <p className="result-stat">
+                  <span>Wins</span>
+                  <strong>{wins}</strong>
+                </p>
+                <p className="result-stat">
+                  <span>Win percentage</span>
+                  <strong>{winPercentage}</strong>
+                </p>
+              </div>
+            </div>
             <button type="button" onClick={() => void newGame()}>
               Play again
             </button>
