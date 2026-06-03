@@ -42,12 +42,17 @@
 }
 
 .brand-mark {
-  width: 20px;
-  height: 23px;
+  width: 22px;
+  height: 25px;
   flex: 0 0 auto;
-  clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
-  background: #4d9ce8;
-  box-shadow: inset 0 0 0 2px rgba(25, 25, 25, 0.18);
+  overflow: visible;
+}
+
+.brand-mark polygon {
+  fill: #4d9ce8;
+  stroke: rgba(25, 25, 25, 0.22);
+  stroke-linejoin: round;
+  stroke-width: 1.6;
 }
 
 .topbar h1 {

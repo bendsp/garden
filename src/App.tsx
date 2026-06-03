@@ -693,7 +693,9 @@ function App() {
     <main className="app">
       <header className="topbar">
         <div className="brand">
-          <span className="brand-mark" aria-hidden="true" />
+          <svg className="brand-mark" viewBox="-12 -12 24 24" aria-hidden="true">
+            <polygon points={hexPoints(10)} />
+          </svg>
           <h1>Garden</h1>
         </div>
         <div className="actions" aria-label="Game controls">
