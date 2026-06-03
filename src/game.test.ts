@@ -16,6 +16,7 @@ import {
   isSingleMatch,
   legalMoves,
   parseLevelsDat,
+  undoGame,
   validateGeneratedBoard,
 } from './game'
 
@@ -134,6 +135,33 @@ describe('garden rules', () => {
     expect(Object.values(next.board)).toHaveLength(0)
     expect(next.finishedAt).toBeTypeOf('number')
     expect(next.message).toBe('Cleared.')
+  })
+
+  it('starts the timer on first removal and preserves it through undo', () => {
+    const first = makeMarble('air', 0, 0)
+    const second = makeMarble('air', 1, 0)
+    const board: Board = {
+      [first.cell.key]: first,
+      [second.cell.key]: second,
+    }
+    const game = {
+      seed: 1,
+      board,
+      initialBoard: board,
+      solution: [],
+      selectedIds: [],
+      history: [],
+      metalIndex: 0,
+      message: 'Test.',
+      startedAt: Date.now(),
+    }
+
+    const next = applyRemoval(game, [first.id, second.id])
+    expect(next.timerStartedAt).toBeTypeOf('number')
+
+    const undone = undoGame(next)
+    expect(undone.timerStartedAt).toBe(next.timerStartedAt)
+    expect(Object.values(undone.board)).toHaveLength(2)
   })
 
   it('parses the project levels.dat format with gold at the center', () => {

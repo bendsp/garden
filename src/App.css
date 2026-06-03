@@ -25,9 +25,9 @@
 
 .topbar {
   min-height: 42px;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
   gap: 16px;
   width: 100%;
 }
@@ -41,6 +41,7 @@
   display: flex;
   align-items: center;
   gap: 9px;
+  justify-self: start;
 }
 
 .brand-mark {
@@ -67,7 +68,18 @@
 .actions {
   display: flex;
   align-items: center;
+  justify-self: end;
   gap: 8px;
+}
+
+.topbar-timer {
+  justify-self: center;
+  color: var(--ink);
+  font-size: 18px;
+  font-weight: 650;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
 }
 
 button {
@@ -828,6 +840,14 @@ button:disabled {
   .topbar p {
     max-width: 42vw;
     font-size: 13px;
+  }
+
+  .topbar {
+    gap: 8px;
+  }
+
+  .topbar-timer {
+    font-size: 15px;
   }
 
   .actions {

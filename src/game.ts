@@ -33,6 +33,7 @@ export type GameState = {
   metalIndex: number
   message: string
   startedAt: number
+  timerStartedAt?: number
   finishedAt?: number
 }
 
@@ -278,6 +279,7 @@ function updateMetalIndex(types: MarbleType[], metalIndex: number) {
 }
 
 export function applyRemoval(state: GameState, ids: string[]): GameState {
+  const now = Date.now()
   const marbles = ids
     .map((id) => Object.values(state.board).find((marble) => marble.id === id))
     .filter(Boolean) as Marble[]
@@ -299,7 +301,8 @@ export function applyRemoval(state: GameState, ids: string[]): GameState {
       : movesLeft === 0
         ? 'No legal moves.'
         : `${remaining} tiles remain.`
-  const finishedAt = remaining === 0 ? Date.now() : undefined
+  const timerStartedAt = state.timerStartedAt ?? now
+  const finishedAt = remaining === 0 ? now : undefined
 
   return {
     ...state,
@@ -308,6 +311,7 @@ export function applyRemoval(state: GameState, ids: string[]): GameState {
     metalIndex,
     history: [...state.history, state.board],
     message,
+    timerStartedAt,
     finishedAt,
   }
 }
@@ -408,6 +412,7 @@ export function generateBoard(seed = Math.floor(Math.random() * 2 ** 32)): GameS
         metalIndex: 0,
         message: 'Select a free tile.',
         startedAt: Date.now(),
+        timerStartedAt: undefined,
       }
     }
   }
@@ -491,6 +496,7 @@ export function parseLevelsDat(buffer: ArrayBuffer, seed = Math.floor(Math.rando
     metalIndex: 0,
     message: `Level ${boardIndex + 1}.`,
     startedAt: Date.now(),
+    timerStartedAt: undefined,
   }
 }
 
@@ -548,6 +554,7 @@ export function restartGame(state: GameState): GameState {
     metalIndex: 0,
     message: 'Restarted.',
     startedAt: Date.now(),
+    timerStartedAt: undefined,
     finishedAt: undefined,
   }
 }

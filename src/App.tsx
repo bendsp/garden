@@ -92,6 +92,8 @@ function activateGame(nextGame: GameState) {
     selectedIds: [],
     history: [],
     startedAt: Date.now(),
+    timerStartedAt: undefined,
+    finishedAt: undefined,
   }
 }
 
@@ -476,6 +478,7 @@ function App() {
   const [countedWin, setCountedWin] = useState<string | null>(null)
   const [rulesOpen, setRulesOpen] = useState(true)
   const [lossOpen, setLossOpen] = useState(false)
+  const [now, setNow] = useState(() => Date.now())
   const levelsBufferRef = useRef<ArrayBuffer | null>(null)
   const nextGameRef = useRef<GameState | null>(null)
   const usesMobileBoard = useMediaQuery('(max-width: 680px)')
@@ -571,11 +574,21 @@ function App() {
   }, [rulesOpen])
 
   useEffect(() => {
+    if (!game?.timerStartedAt || game.finishedAt || lossOpen) {
+      return undefined
+    }
+
+    const interval = window.setInterval(() => setNow(Date.now()), 500)
+    return () => window.clearInterval(interval)
+  }, [game?.timerStartedAt, game?.finishedAt, lossOpen])
+
+  useEffect(() => {
     if (!hasNoLegalMoves) {
       return undefined
     }
 
     const timeout = window.setTimeout(() => {
+      setNow(Date.now())
       setLossOpen(true)
       playLossSound()
     }, 1000)
@@ -719,6 +732,7 @@ function App() {
   }
 
   const currentPurple = getUnlockedMetal(game.metalIndex)
+  const elapsedMs = game.timerStartedAt ? (game.finishedAt ?? now) - game.timerStartedAt : 0
   const purpleStateFor = (index: number) => {
     if (index < game.metalIndex) {
       return 'completed' as const
@@ -731,6 +745,9 @@ function App() {
     <main className="app">
       <header className="topbar">
         <BrandLogo />
+        <div className="topbar-timer" aria-label="Elapsed time">
+          {formatTime(elapsedMs)}
+        </div>
         <div className="actions" aria-label="Game controls">
           <button type="button" onClick={() => setRulesOpen((open) => !open)}>
             Rules
@@ -857,7 +874,7 @@ function App() {
         <section className="result-backdrop" aria-label="Win result">
           <div className="result" role="dialog" aria-modal="true" aria-labelledby="win-title">
             <h2 id="win-title">You won</h2>
-            <p>Time: {formatTime(game.finishedAt - game.startedAt)}</p>
+            <p>Time: {formatTime(elapsedMs)}</p>
             <p>Games won: {wins}</p>
             <button type="button" onClick={() => void newGame()}>
               Play again
