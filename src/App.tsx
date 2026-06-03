@@ -634,7 +634,8 @@ function App() {
   return (
     <main className="app">
       <header className="topbar">
-        <div>
+        <div className="brand">
+          <span className="brand-mark" aria-hidden="true" />
           <h1>Garden</h1>
         </div>
         <div className="actions" aria-label="Game controls">
