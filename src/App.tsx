@@ -270,7 +270,7 @@ function singleClearSteps(tileId: string): DemoStep[] {
 }
 
 const CLEARING_SCENE: DemoScene = {
-  tiles: pairTiles('water', 'water'),
+  tiles: pairTiles('earth', 'earth'),
   steps: [
     ...matchSteps('left', 'right'),
     { kind: 'hold', ms: MATCH_TIMING.resetHold - MATCH_TIMING.cursorFade },
@@ -371,7 +371,7 @@ const PURPLE_MATCH_SCENE: DemoScene = {
     { id: 'one', position: 'southWest', type: 'silver', locked: true },
   ],
   steps: [
-    ...matchSteps('two', 'dot-two'),
+    ...matchSteps('two', 'dot-two', ['two', 'dot-two'], ['dot-one', 'dot-two']),
     { kind: 'lock', tileIds: ['one'], locked: false },
     { kind: 'hold', ms: PURPLE_STAGE_HOLD },
     ...matchSteps('one', 'dot-one'),
