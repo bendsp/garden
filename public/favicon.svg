@@ -1,6 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <path fill="#fafafa" d="M0 0h64v64H0z"/>
-  <path fill="#191919" d="m32 6 22.5 13v26L32 58 9.5 45V19L32 6Z"/>
-  <path fill="#21a8a2" d="m32 15 14.7 8.5v17L32 49l-14.7-8.5v-17L32 15Z"/>
-  <path fill="#fafafa" d="M30 23h4v18h-4z"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-16 -16 32 32">
+  <polygon
+    points="-9.96,-5.75 0,-11.5 9.96,-5.75 9.96,5.75 0,11.5 -9.96,5.75"
+    fill="#4d9ce8"
+    stroke="rgba(25, 25, 25, 0.28)"
+    stroke-linejoin="round"
+    stroke-width="1.8"
+  />
 </svg>

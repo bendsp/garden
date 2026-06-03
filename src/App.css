@@ -40,13 +40,13 @@
 .brand {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 10px;
   justify-self: start;
 }
 
 .brand-mark {
-  width: 30px;
-  height: 35px;
+  width: 36px;
+  height: 41px;
   flex: 0 0 auto;
   overflow: visible;
 }
