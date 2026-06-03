@@ -1124,7 +1124,11 @@ button:disabled {
 }
 
 @keyframes color-match-pair-one {
-  0%,
+  0% {
+    opacity: 0;
+  }
+
+  2%,
   22% {
     opacity: 1;
   }
@@ -1137,11 +1141,12 @@ button:disabled {
 
 @keyframes color-match-pair-two {
   0%,
-  24.5% {
+  24.5%,
+  25% {
     opacity: 0;
   }
 
-  25%,
+  27%,
   47% {
     opacity: 1;
   }
@@ -1154,11 +1159,12 @@ button:disabled {
 
 @keyframes color-match-pair-three {
   0%,
-  49.5% {
+  49.5%,
+  50% {
     opacity: 0;
   }
 
-  50%,
+  52%,
   72% {
     opacity: 1;
   }
@@ -1171,11 +1177,12 @@ button:disabled {
 
 @keyframes color-match-pair-four {
   0%,
-  74.5% {
+  74.5%,
+  75% {
     opacity: 0;
   }
 
-  75%,
+  77%,
   97% {
     opacity: 1;
   }
