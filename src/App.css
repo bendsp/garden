@@ -787,6 +787,17 @@ button:disabled {
   margin-top: 6px;
 }
 
+.result-actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.result-actions button {
+  margin-top: 0;
+}
+
 @media (max-width: 680px) {
   .app {
     padding: 4px;

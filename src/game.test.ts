@@ -14,6 +14,7 @@ import {
   isFree,
   isPairMatch,
   isSingleMatch,
+  legalMoves,
   parseLevelsDat,
   validateGeneratedBoard,
 } from './game'
@@ -84,6 +85,15 @@ describe('garden rules', () => {
     expect(isSingleMatch('gold', 4)).toBe(false)
     expect(isSingleMatch('gold', 5)).toBe(true)
     expect(isSingleMatch('silver', 5)).toBe(false)
+  })
+
+  it('reports no legal moves only when no playable match exists', () => {
+    const air = makeMarble('air', 0, 0)
+    const fire = makeMarble('fire', 5, 0)
+    const secondAir = makeMarble('air', -5, 0)
+
+    expect(legalMoves({ [air.cell.key]: air, [fire.cell.key]: fire }, 0)).toHaveLength(0)
+    expect(legalMoves({ [air.cell.key]: air, [secondAir.cell.key]: secondAir }, 0)).toHaveLength(1)
   })
 
   it('uses color-only elements and salt, circle quicksilver, and countdown metal labels', () => {

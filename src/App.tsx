@@ -14,6 +14,7 @@ import {
   getUnlockedMetal,
   isPairMatch,
   isSingleMatch,
+  legalMoves,
   parseLevelsDat,
   undoGame,
 } from './game'
@@ -681,6 +682,7 @@ function App() {
   }
 
   const currentPurple = getUnlockedMetal(game.metalIndex)
+  const hasNoLegalMoves = !game.finishedAt && marbles.length > 0 && legalMoves(game.board, game.metalIndex).length === 0
   const purpleStateFor = (index: number) => {
     if (index < game.metalIndex) {
       return 'completed' as const
@@ -826,6 +828,27 @@ function App() {
             <button type="button" onClick={() => void newGame()}>
               Play again
             </button>
+          </div>
+        </section>
+      )}
+
+      {hasNoLegalMoves && (
+        <section className="result-backdrop" aria-label="Loss result">
+          <div className="result" role="dialog" aria-modal="true" aria-labelledby="loss-title">
+            <h2 id="loss-title">No moves left</h2>
+            <p>This board has no valid moves left.</p>
+            <div className="result-actions">
+              <button
+                type="button"
+                onClick={() => setGame((current) => (current ? undoGame(current) : current))}
+                disabled={!game.history.length}
+              >
+                Undo
+              </button>
+              <button type="button" onClick={() => void newGame()}>
+                Play again
+              </button>
+            </div>
           </div>
         </section>
       )}
