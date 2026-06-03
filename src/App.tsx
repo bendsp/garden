@@ -260,13 +260,24 @@ function miniPoint(position: RulePosition) {
   }
 }
 
-function MiniRuleBoard({ tiles, animatedClearing = false }: { tiles: MiniTile[]; animatedClearing?: boolean }) {
+function MiniRuleBoard({
+  tiles,
+  animatedClearing = false,
+  animatedUnlocking = false,
+}: {
+  tiles: MiniTile[]
+  animatedClearing?: boolean
+  animatedUnlocking?: boolean
+}) {
   const tileByPosition = new Map(tiles.map((tile) => [tile.position, tile]))
   const westPoint = miniPoint('west')
   const eastPoint = miniPoint('east')
+  const centerPoint = miniPoint('center')
   return (
     <svg
-      className={`mini-rule-board ${animatedClearing ? 'is-clearing-demo' : ''}`}
+      className={`mini-rule-board ${animatedClearing ? 'is-clearing-demo' : ''} ${
+        animatedUnlocking ? 'is-unlocking-demo' : ''
+      }`}
       viewBox={`0 0 ${MINI_BOARD_WIDTH} ${MINI_BOARD_HEIGHT}`}
       aria-hidden="true"
       style={{
@@ -276,6 +287,8 @@ function MiniRuleBoard({ tiles, animatedClearing = false }: { tiles: MiniTile[];
         '--cursor-first-y': `${westPoint.y + 5}px`,
         '--cursor-second-x': `${eastPoint.x - 2}px`,
         '--cursor-second-y': `${eastPoint.y + 5}px`,
+        '--cursor-center-x': `${centerPoint.x - 2}px`,
+        '--cursor-center-y': `${centerPoint.y + 5}px`,
       } as CSSProperties}
     >
       <g className="grid">
@@ -349,7 +362,7 @@ function MiniRuleBoard({ tiles, animatedClearing = false }: { tiles: MiniTile[];
             )
           })}
       </g>
-      {animatedClearing && (
+      {(animatedClearing || animatedUnlocking) && (
         <g className="demo-cursor">
           <path d="M0 0 0 24 6.5 18 10.5 28 16 25.7 11.8 16.1 20 16.1Z" />
         </g>
@@ -488,9 +501,10 @@ function RulesModal({ onClose }: { onClose: () => void }) {
 
           <section className="rules-block">
             <h2>Unlocking Tiles</h2>
-            <div className="rules-cards two-up">
+            <div className="rules-cards one-up">
               <article>
                 <MiniRuleBoard
+                  animatedUnlocking
                   tiles={[
                     { position: 'northWest', type: 'fire' },
                     { position: 'northEast', type: 'fire' },
@@ -499,19 +513,6 @@ function RulesModal({ onClose }: { onClose: () => void }) {
                     { position: 'east', type: 'fire' },
                     { position: 'southWest', type: 'fire' },
                     { position: 'southEast', type: 'fire' },
-                  ]}
-                />
-              </article>
-              <article>
-                <MiniRuleBoard
-                  tiles={[
-                    { position: 'northWest', type: 'fire' },
-                    { position: 'northEast', mark: '1' },
-                    { position: 'west', type: 'fire' },
-                    { position: 'center', type: 'water' },
-                    { position: 'east', mark: '2' },
-                    { position: 'southWest', type: 'fire' },
-                    { position: 'southEast', mark: '3' },
                   ]}
                 />
               </article>

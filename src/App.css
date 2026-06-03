@@ -764,6 +764,20 @@ button:disabled {
   animation: clearing-demo-ready 4.6s infinite;
 }
 
+.mini-rule-board.is-unlocking-demo .position-northEast,
+.mini-rule-board.is-unlocking-demo .position-east,
+.mini-rule-board.is-unlocking-demo .position-southEast {
+  animation: unlocking-demo-blockers 5.2s infinite;
+}
+
+.mini-rule-board.is-unlocking-demo .position-center {
+  animation: unlocking-demo-center-state 5.2s infinite;
+}
+
+.mini-rule-board.is-unlocking-demo .position-center .marble-face {
+  animation: unlocking-demo-select 5.2s infinite;
+}
+
 .demo-cursor {
   color: #191919;
   filter: drop-shadow(0 2px 2px rgba(25, 25, 25, 0.28));
@@ -777,6 +791,10 @@ button:disabled {
   stroke: currentColor;
   stroke-linejoin: round;
   stroke-width: 2.2;
+}
+
+.mini-rule-board.is-unlocking-demo .demo-cursor {
+  animation: unlocking-demo-cursor 5.2s infinite;
 }
 
 .mini-board-labels text,
@@ -906,6 +924,94 @@ button:disabled {
   96%,
   100% {
     opacity: 1;
+  }
+}
+
+@keyframes unlocking-demo-blockers {
+  0%,
+  34% {
+    opacity: 1;
+  }
+
+  46%,
+  82% {
+    opacity: 0;
+  }
+
+  94%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes unlocking-demo-center-state {
+  0%,
+  36% {
+    opacity: 0.22;
+    filter: grayscale(0.35);
+  }
+
+  48%,
+  82% {
+    opacity: 1;
+    filter: none;
+  }
+
+  94%,
+  100% {
+    opacity: 0.22;
+    filter: grayscale(0.35);
+  }
+}
+
+@keyframes unlocking-demo-select {
+  0%,
+  58% {
+    stroke: rgba(25, 25, 25, 0.3);
+    stroke-width: 2.2;
+  }
+
+  66%,
+  82% {
+    stroke: #050505;
+    stroke-width: 4.2;
+  }
+
+  94%,
+  100% {
+    stroke: rgba(25, 25, 25, 0.3);
+    stroke-width: 2.2;
+  }
+}
+
+@keyframes unlocking-demo-cursor {
+  0%,
+  46% {
+    opacity: 0;
+    transform: translate(var(--cursor-start-x), var(--cursor-start-y)) scale(1);
+  }
+
+  56%,
+  62% {
+    opacity: 1;
+    transform: translate(var(--cursor-center-x), var(--cursor-center-y)) scale(1);
+  }
+
+  66% {
+    opacity: 1;
+    transform: translate(var(--cursor-center-x), var(--cursor-center-y)) scale(0.86);
+  }
+
+  70%,
+  78% {
+    opacity: 1;
+    transform: translate(var(--cursor-center-x), var(--cursor-center-y)) scale(1);
+  }
+
+  84%,
+  100% {
+    opacity: 0;
+    transform: translate(var(--cursor-center-x), var(--cursor-center-y)) scale(1);
   }
 }
 
