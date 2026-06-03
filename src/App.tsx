@@ -371,6 +371,77 @@ function MiniRuleBoard({
   )
 }
 
+function ColorMatchDemoBoard() {
+  const westPoint = miniPoint('west')
+  const eastPoint = miniPoint('east')
+  const pairs: Array<{ className: string; types: [MarbleType, MarbleType] }> = [
+    { className: 'is-red-pair', types: ['fire', 'fire'] },
+    { className: 'is-blue-pair', types: ['water', 'water'] },
+    { className: 'is-green-rainbow-pair', types: ['earth', 'salt'] },
+    { className: 'is-rainbow-pair', types: ['salt', 'salt'] },
+  ]
+
+  return (
+    <svg
+      className="mini-rule-board color-match-demo-board"
+      viewBox={`0 0 ${MINI_BOARD_WIDTH} ${MINI_BOARD_HEIGHT}`}
+      aria-hidden="true"
+      style={{
+        '--cursor-start-x': `${westPoint.x - 44}px`,
+        '--cursor-start-y': `${westPoint.y + 28}px`,
+        '--cursor-first-x': `${westPoint.x - 2}px`,
+        '--cursor-first-y': `${westPoint.y + 5}px`,
+        '--cursor-second-x': `${eastPoint.x - 2}px`,
+        '--cursor-second-y': `${eastPoint.y + 5}px`,
+      } as CSSProperties}
+    >
+      <g className="grid">
+        {RULE_POSITIONS.map((position) => {
+          const point = miniPoint(position)
+          return (
+            <polygon
+              key={position}
+              points={hexPoints(MINI_HEX_SIZE - 2)}
+              transform={`translate(${point.x} ${point.y})`}
+            />
+          )
+        })}
+      </g>
+      <g className="color-match-pairs">
+        {pairs.map((pair) => (
+          <g key={pair.className} className={`color-match-pair ${pair.className}`}>
+            {(['west', 'east'] as const).map((position, index) => {
+              const point = miniPoint(position)
+              const type = pair.types[index]
+              const mark = MARBLE_MARKS[type]
+              return (
+                <g
+                  key={`${pair.className}-${position}`}
+                  className={`marble position-${position} marble-${type} is-free ${
+                    position === 'west' ? 'is-demo-selected' : 'is-demo-target'
+                  }`}
+                  transform={`translate(${point.x} ${point.y})`}
+                >
+                  {position === 'east' && <polygon className="match-pulse" points={hexPoints(MINI_HEX_SIZE - 1)} />}
+                  <polygon className="marble-face" points={hexPoints(MINI_HEX_SIZE - 5)} />
+                  {mark && (
+                    <text aria-hidden="true" textAnchor="middle" dominantBaseline="central">
+                      {mark}
+                    </text>
+                  )}
+                </g>
+              )
+            })}
+          </g>
+        ))}
+      </g>
+      <g className="demo-cursor">
+        <path d="M0 0 0 24 6.5 18 10.5 28 16 25.7 11.8 16.1 20 16.1Z" />
+      </g>
+    </svg>
+  )
+}
+
 function MatchPair({ types }: { types: [MarbleType, MarbleType] }) {
   return (
     <span className="match-pair">
@@ -463,7 +534,6 @@ function LoadingMessage({ error, onRetry }: { error: string; onRetry: () => void
 }
 
 function RulesModal({ onClose }: { onClose: () => void }) {
-  const elementTypes: MarbleType[] = ['fire', 'air', 'earth', 'water']
   const metalTypes: MarbleType[] = ['lead', 'tin', 'iron', 'copper', 'silver']
 
   return (
@@ -527,23 +597,14 @@ function RulesModal({ onClose }: { onClose: () => void }) {
         <section className="rules-combinations">
           <h2>Matching Combinations</h2>
           <div className="combination-grid">
-            <article>
-              <div className="combo-row">
-                {elementTypes.map((type) => (
-                  <MatchPair key={type} types={[type, type]} />
-                ))}
+            <article className="color-match-demo">
+              <div className="color-match-frame">
+                <ColorMatchDemoBoard />
               </div>
-              <p>The primary colors match with other tiles of the same color.</p>
-            </article>
-
-            <article>
-              <div className="combo-row">
-                {elementTypes.map((type) => (
-                  <MatchPair key={type} types={[type, 'salt']} />
-                ))}
-                <MatchPair types={['salt', 'salt']} />
+              <div className="color-match-copy">
+                <p>The primary colors match with other tiles of the same color.</p>
+                <p>Rainbow matches with any primary color or with itself.</p>
               </div>
-              <p>Rainbow matches with any primary color or with itself.</p>
             </article>
 
             <article>
