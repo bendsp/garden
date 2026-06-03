@@ -669,7 +669,8 @@ button:disabled {
 
 .rules-brand {
   justify-content: center;
-  margin: 0 36px 22px;
+  width: max-content;
+  margin: 0 auto 22px;
 }
 
 .rules-top {
