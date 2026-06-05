@@ -70,16 +70,35 @@
   align-items: center;
   justify-self: end;
   gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .topbar-timer {
   justify-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   color: var(--ink);
   font-size: 18px;
   font-weight: 650;
   line-height: 1;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0;
+}
+
+.mode-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 23px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--rules-bg);
+  color: #5f574f;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1;
 }
 
 button {
@@ -141,6 +160,11 @@ button:disabled {
   outline: none;
   user-select: none;
   -webkit-user-select: none;
+}
+
+.board.is-dealing .marble {
+  animation: deal-tile-in 520ms cubic-bezier(0.2, 0.8, 0.22, 1) both;
+  animation-delay: calc(min(var(--deal-index), 24) * 12ms);
 }
 
 .marble polygon {
@@ -232,7 +256,23 @@ button:disabled {
   }
 }
 
+@keyframes deal-tile-in {
+  from {
+    opacity: 0;
+    filter: saturate(0.7) brightness(1.18);
+  }
+
+  to {
+    opacity: 1;
+    filter: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .board.is-dealing .marble {
+    animation: none;
+  }
+
   .marble .match-pulse,
   .marble.is-match-candidate .marble-face {
     animation: none;
@@ -626,6 +666,92 @@ button:disabled {
   box-shadow: 0 24px 80px rgba(20, 20, 20, 0.26);
   color: #332f2a;
   padding: 28px;
+}
+
+.stats-modal {
+  position: relative;
+  width: min(760px, 100%);
+  max-height: min(760px, calc(100svh - 44px));
+  overflow: auto;
+  border: 1px solid #bdb8ad;
+  border-radius: 8px;
+  background: var(--rules-bg);
+  box-shadow: 0 24px 80px rgba(20, 20, 20, 0.26);
+  color: #332f2a;
+  padding: 30px;
+}
+
+.stats-modal h2 {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+  margin: 0 0 24px;
+  color: #403833;
+  font-size: 22px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.stats-modal h2::before,
+.stats-modal h2::after,
+.stats-section h3::before,
+.stats-section h3::after {
+  content: "";
+  height: 1px;
+  background: #8d877c;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.stats-section {
+  display: grid;
+  gap: 16px;
+}
+
+.stats-section h3 {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  color: #403833;
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.stats-section dl {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+}
+
+.stats-section dl > div {
+  display: grid;
+  gap: 2px;
+}
+
+.stats-section dt {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.stats-section dd {
+  margin: 0;
+  color: var(--ink);
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
 }
 
 .rules-modal h2 {
@@ -1156,6 +1282,16 @@ button:disabled {
     gap: 5px;
   }
 
+  .actions button {
+    padding-inline: 7px;
+  }
+
+  .mode-badge {
+    min-height: 20px;
+    padding-inline: 6px;
+    font-size: 11px;
+  }
+
   .result-win {
     padding: 34px 16px 22px;
     gap: 14px;
@@ -1228,6 +1364,16 @@ button:disabled {
   .rules-modal {
     max-height: calc(100svh - 16px);
     padding: 18px 14px;
+  }
+
+  .stats-modal {
+    max-height: calc(100svh - 16px);
+    padding: 22px 16px;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
   }
 
   .rules-modal h2 {

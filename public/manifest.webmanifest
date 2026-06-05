@@ -1,0 +1,19 @@
+{
+  "name": "Garden",
+  "short_name": "Garden",
+  "description": "A minimalist hexagonal tile puzzle game.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fafafa",
+  "theme_color": "#f4f1e8",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

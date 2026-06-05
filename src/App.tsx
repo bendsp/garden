@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
+import { Fragment, type CSSProperties, useCallback, useEffect, useRef, useState } from 'react'
 import './App.css'
 import { playLossSound, playMatchSound, playSelectSound, playWinSound } from './audio'
 import {
@@ -34,6 +34,7 @@ const HEX_WIDTH = Math.sqrt(3) * HEX_SIZE
 const HEX_HEIGHT = 2 * HEX_SIZE
 const DESKTOP_BOARD_PADDING = 44
 const MOBILE_BOARD_PADDING = 4
+const DAILY_SEED_BASE = 0x9e3779b9
 
 const INVENTORY_GUIDE_TYPES: MarbleType[] = [
   'salt',
@@ -48,6 +49,31 @@ const INVENTORY_GUIDE_TYPES: MarbleType[] = [
 let cachedLevelsBuffer: ArrayBuffer | null = null
 let levelsBufferRequest: Promise<ArrayBuffer> | null = null
 
+type GameMode = 'normal' | 'daily'
+
+type ActiveGame = GameState & {
+  mode: GameMode
+  dailyDate?: string
+}
+
+const MODE_LABELS: Record<GameMode, string> = {
+  normal: 'Garden',
+  daily: 'Daily',
+}
+
+type GardenStats = {
+  wins: number
+  losses: number
+  bestTime?: number
+  totalWinTime: number
+  currentStreak: number
+  bestStreak: number
+  dailyWins: number
+  dailyLosses: number
+  dailyBestTime?: number
+  dailyLastWin?: string
+}
+
 function readStoredNumber(key: string, fallback = 0) {
   const stored = localStorage.getItem(key)
   if (stored === null) {
@@ -55,6 +81,56 @@ function readStoredNumber(key: string, fallback = 0) {
   }
   const value = Number(stored)
   return Number.isFinite(value) ? value : fallback
+}
+
+function readStoredString(key: string) {
+  return localStorage.getItem(key) ?? undefined
+}
+
+function readStats(): GardenStats {
+  const storedBestTime = readStoredNumber('garden:best-time', Number.POSITIVE_INFINITY)
+  const storedDailyBestTime = readStoredNumber('garden:daily-best-time', Number.POSITIVE_INFINITY)
+
+  return {
+    wins: readStoredNumber('garden:wins'),
+    losses: readStoredNumber('garden:losses'),
+    bestTime: Number.isFinite(storedBestTime) ? storedBestTime : undefined,
+    totalWinTime: readStoredNumber('garden:total-win-time'),
+    currentStreak: readStoredNumber('garden:current-streak'),
+    bestStreak: readStoredNumber('garden:best-streak'),
+    dailyWins: readStoredNumber('garden:daily-wins'),
+    dailyLosses: readStoredNumber('garden:daily-losses'),
+    dailyBestTime: Number.isFinite(storedDailyBestTime) ? storedDailyBestTime : undefined,
+    dailyLastWin: readStoredString('garden:daily-last-win'),
+  }
+}
+
+function writeStats(stats: GardenStats) {
+  localStorage.setItem('garden:wins', String(stats.wins))
+  localStorage.setItem('garden:losses', String(stats.losses))
+  localStorage.setItem('garden:total-win-time', String(stats.totalWinTime))
+  localStorage.setItem('garden:current-streak', String(stats.currentStreak))
+  localStorage.setItem('garden:best-streak', String(stats.bestStreak))
+  localStorage.setItem('garden:daily-wins', String(stats.dailyWins))
+  localStorage.setItem('garden:daily-losses', String(stats.dailyLosses))
+
+  if (stats.bestTime === undefined) {
+    localStorage.removeItem('garden:best-time')
+  } else {
+    localStorage.setItem('garden:best-time', String(stats.bestTime))
+  }
+
+  if (stats.dailyBestTime === undefined) {
+    localStorage.removeItem('garden:daily-best-time')
+  } else {
+    localStorage.setItem('garden:daily-best-time', String(stats.dailyBestTime))
+  }
+
+  if (stats.dailyLastWin === undefined) {
+    localStorage.removeItem('garden:daily-last-win')
+  } else {
+    localStorage.setItem('garden:daily-last-win', stats.dailyLastWin)
+  }
 }
 
 function getBoardMetrics(padding: number) {
@@ -109,13 +185,30 @@ function formatPercentage(wins: number, losses: number) {
   return `${Math.round((wins / total) * 100)}%`
 }
 
-function makeGame(buffer: ArrayBuffer) {
-  return parseLevelsDat(buffer, Math.floor(Math.random() * 2 ** 32))
+function formatDateKey(date = new Date()) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
-function activateGame(nextGame: GameState) {
+function dailySeed(dateKey = formatDateKey()) {
+  let hash = DAILY_SEED_BASE
+  for (let index = 0; index < dateKey.length; index += 1) {
+    hash = Math.imul(hash ^ dateKey.charCodeAt(index), 0x85ebca6b)
+  }
+  return hash >>> 0
+}
+
+function makeGame(buffer: ArrayBuffer, seed = Math.floor(Math.random() * 2 ** 32)) {
+  return parseLevelsDat(buffer, seed)
+}
+
+function activateGame(nextGame: GameState, mode: GameMode, dailyDate?: string): ActiveGame {
   return {
     ...nextGame,
+    mode,
+    dailyDate,
     selectedIds: [],
     history: [],
     startedAt: Date.now(),
@@ -499,15 +592,21 @@ function BrandLogo({ className = '' }: { className?: string }) {
 
 function AppHeader({
   elapsed = '0:00',
+  mode = 'normal',
   undoDisabled,
   onRules,
+  onStats,
+  onDaily,
   onUndo,
   onNew,
   disabled = false,
 }: {
   elapsed?: string
+  mode?: GameMode
   undoDisabled: boolean
   onRules: () => void
+  onStats: () => void
+  onDaily: () => void
   onUndo: () => void
   onNew: () => void
   disabled?: boolean
@@ -516,11 +615,18 @@ function AppHeader({
     <header className="topbar">
       <BrandLogo />
       <div className="topbar-timer" aria-label="Elapsed time">
+        {mode === 'daily' && <span className="mode-badge">Daily</span>}
         {elapsed}
       </div>
       <div className="actions" aria-label="Game controls">
         <button type="button" onClick={onRules} disabled={disabled}>
           Rules
+        </button>
+        <button type="button" onClick={onStats} disabled={disabled}>
+          Stats
+        </button>
+        <button type="button" onClick={onDaily} disabled={disabled || mode === 'daily'}>
+          Daily
         </button>
         <button type="button" onClick={onUndo} disabled={disabled || undoDisabled}>
           Undo
@@ -540,6 +646,8 @@ function LoadingMessage({ error, onRetry }: { error: string; onRetry: () => void
         undoDisabled
         disabled
         onRules={() => undefined}
+        onStats={() => undefined}
+        onDaily={() => undefined}
         onUndo={() => undefined}
         onNew={onRetry}
       />
@@ -653,19 +761,105 @@ function RulesModal({ onClose }: { onClose: () => void }) {
   )
 }
 
+function StatsModal({ stats, onClose }: { stats: GardenStats; onClose: () => void }) {
+  const winPercentage = formatPercentage(stats.wins, stats.losses)
+  const dailyPercentage = formatPercentage(stats.dailyWins, stats.dailyLosses)
+  const averageWinTime = stats.wins > 0 ? stats.totalWinTime / stats.wins : undefined
+
+  return (
+    <div className="rules-backdrop" role="presentation" onClick={onClose}>
+      <section
+        className="stats-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="stats-title"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <button className="rules-close" type="button" aria-label="Close stats" onClick={onClose}>
+          ×
+        </button>
+        <h2 id="stats-title">Stats</h2>
+        <div className="stats-grid">
+          <section className="stats-section" aria-labelledby="overall-stats-title">
+            <h3 id="overall-stats-title">Overall</h3>
+            <dl>
+              <div>
+                <dt>Wins</dt>
+                <dd>{stats.wins}</dd>
+              </div>
+              <div>
+                <dt>Losses</dt>
+                <dd>{stats.losses}</dd>
+              </div>
+              <div>
+                <dt>Win rate</dt>
+                <dd>{winPercentage}</dd>
+              </div>
+              <div>
+                <dt>Current streak</dt>
+                <dd>{stats.currentStreak}</dd>
+              </div>
+              <div>
+                <dt>Best streak</dt>
+                <dd>{stats.bestStreak}</dd>
+              </div>
+            </dl>
+          </section>
+          <section className="stats-section" aria-labelledby="time-stats-modal-title">
+            <h3 id="time-stats-modal-title">Time</h3>
+            <dl>
+              <div>
+                <dt>Best time</dt>
+                <dd>{stats.bestTime === undefined ? '—' : formatTime(stats.bestTime)}</dd>
+              </div>
+              <div>
+                <dt>Average win</dt>
+                <dd>{averageWinTime === undefined ? '—' : formatTime(averageWinTime)}</dd>
+              </div>
+              <div>
+                <dt>Daily best</dt>
+                <dd>{stats.dailyBestTime === undefined ? '—' : formatTime(stats.dailyBestTime)}</dd>
+              </div>
+            </dl>
+          </section>
+          <section className="stats-section" aria-labelledby="daily-stats-title">
+            <h3 id="daily-stats-title">Daily</h3>
+            <dl>
+              <div>
+                <dt>Cleared</dt>
+                <dd>{stats.dailyWins}</dd>
+              </div>
+              <div>
+                <dt>Losses</dt>
+                <dd>{stats.dailyLosses}</dd>
+              </div>
+              <div>
+                <dt>Win rate</dt>
+                <dd>{dailyPercentage}</dd>
+              </div>
+              <div>
+                <dt>Last clear</dt>
+                <dd>{stats.dailyLastWin ?? '—'}</dd>
+              </div>
+            </dl>
+          </section>
+        </div>
+      </section>
+    </div>
+  )
+}
+
 function App() {
-  const [game, setGame] = useState<GameState | null>(null)
+  const [game, setGame] = useState<ActiveGame | null>(null)
   const [loadError, setLoadError] = useState('')
-  const [wins, setWins] = useState(() => readStoredNumber('garden:wins'))
-  const [losses, setLosses] = useState(() => readStoredNumber('garden:losses'))
-  const [bestTime, setBestTime] = useState(() => {
-    const stored = readStoredNumber('garden:best-time', Number.POSITIVE_INFINITY)
-    return Number.isFinite(stored) ? stored : undefined
-  })
+  const [stats, setStats] = useState(readStats)
   const [countedWin, setCountedWin] = useState<string | null>(null)
   const [rulesOpen, setRulesOpen] = useState(true)
+  const [statsOpen, setStatsOpen] = useState(false)
   const [lossOpen, setLossOpen] = useState(false)
   const [winOpen, setWinOpen] = useState(true)
+  const [dealKey, setDealKey] = useState(0)
+  const [isDealing, setIsDealing] = useState(false)
   const [now, setNow] = useState(() => Date.now())
   const levelsBufferRef = useRef<ArrayBuffer | null>(null)
   const nextGameRef = useRef<GameState | null>(null)
@@ -708,28 +902,58 @@ function App() {
     return buffer
   }, [])
 
-  function recordAbandonedLoss(currentGame: GameState | null) {
-    if (!currentGame?.timerStartedAt || currentGame.finishedAt) {
-      return
-    }
+  const showGame = useCallback((nextGame: ActiveGame) => {
+    setGame(nextGame)
+    setDealKey((key) => key + 1)
+    setIsDealing(true)
+  }, [])
 
-    setLosses((current) => {
-      const next = current + 1
-      localStorage.setItem('garden:losses', String(next))
+  function updateStats(update: (current: GardenStats) => GardenStats) {
+    setStats((current) => {
+      const next = update(current)
+      writeStats(next)
       return next
     })
   }
 
-  async function newGame() {
+  function recordAbandonedLoss(currentGame: ActiveGame | null) {
+    if (!currentGame?.timerStartedAt || currentGame.finishedAt) {
+      return
+    }
+
+    updateStats((current) => {
+      const next = {
+        ...current,
+        losses: current.losses + 1,
+        currentStreak: 0,
+      }
+
+      if (currentGame.mode === 'daily') {
+        next.dailyLosses += 1
+      }
+
+      return next
+    })
+  }
+
+  async function newGame(mode: GameMode = 'normal') {
     try {
       const buffer = await loadLevelsBuffer()
-      const preparedGame = nextGameRef.current ?? makeGame(buffer)
+      const dailyDate = mode === 'daily' ? formatDateKey() : undefined
+      const preparedGame =
+        mode === 'daily'
+          ? makeGame(buffer, dailySeed(dailyDate))
+          : nextGameRef.current ?? makeGame(buffer)
       recordAbandonedLoss(game)
-      nextGameRef.current = null
-      setGame(activateGame(preparedGame))
+      if (mode === 'normal') {
+        nextGameRef.current = null
+      }
+      showGame(activateGame(preparedGame, mode, dailyDate))
       setLossOpen(false)
       setWinOpen(true)
-      scheduleNextGame(buffer)
+      if (mode === 'normal') {
+        scheduleNextGame(buffer)
+      }
       setCountedWin(null)
       setLoadError('')
     } catch (error) {
@@ -744,7 +968,7 @@ function App() {
       .then((buffer) => {
         if (!cancelled) {
           const initialGame = makeGame(buffer)
-          setGame(activateGame(initialGame))
+          showGame(activateGame(initialGame, 'normal'))
           setWinOpen(true)
           scheduleNextGame(buffer)
           setLoadError('')
@@ -759,10 +983,19 @@ function App() {
     return () => {
       cancelled = true
     }
-  }, [loadLevelsBuffer, scheduleNextGame])
+  }, [loadLevelsBuffer, scheduleNextGame, showGame])
 
   useEffect(() => {
-    if (!rulesOpen && !(game?.finishedAt && winOpen)) {
+    if (!isDealing) {
+      return undefined
+    }
+
+    const timeout = window.setTimeout(() => setIsDealing(false), 720)
+    return () => window.clearTimeout(timeout)
+  }, [dealKey, isDealing])
+
+  useEffect(() => {
+    if (!rulesOpen && !statsOpen && !(game?.finishedAt && winOpen)) {
       return undefined
     }
 
@@ -770,6 +1003,8 @@ function App() {
       if (event.key === 'Escape') {
         if (game?.finishedAt && winOpen) {
           setWinOpen(false)
+        } else if (statsOpen) {
+          setStatsOpen(false)
         } else {
           setRulesOpen(false)
         }
@@ -778,7 +1013,7 @@ function App() {
 
     document.addEventListener('keydown', closeOnEscape)
     return () => document.removeEventListener('keydown', closeOnEscape)
-  }, [game?.finishedAt, rulesOpen, winOpen])
+  }, [game?.finishedAt, rulesOpen, statsOpen, winOpen])
 
   useEffect(() => {
     if (!game?.timerStartedAt || game.finishedAt || lossOpen) {
@@ -803,28 +1038,40 @@ function App() {
     return () => window.clearTimeout(timeout)
   }, [hasNoLegalMoves])
 
-  function recordWin(nextGame: GameState) {
+  function recordWin(nextGame: ActiveGame) {
     const finishedAt = nextGame.finishedAt
     const timerStartedAt = nextGame.timerStartedAt
     if (!finishedAt || !timerStartedAt) {
       return
     }
 
-    const winKey = `${nextGame.seed}:${nextGame.finishedAt}`
+    const winKey = `${nextGame.mode}:${nextGame.dailyDate ?? 'random'}:${nextGame.seed}:${nextGame.finishedAt}`
     if (countedWin === winKey) {
       return
     }
 
     setCountedWin(winKey)
-    setWins((current) => {
-      const next = current + 1
-      localStorage.setItem('garden:wins', String(next))
-      return next
-    })
-    setBestTime((current) => {
+    updateStats((current) => {
       const elapsed = finishedAt - timerStartedAt
-      const next = current === undefined ? elapsed : Math.min(current, elapsed)
-      localStorage.setItem('garden:best-time', String(next))
+      const currentStreak = current.currentStreak + 1
+      const next = {
+        ...current,
+        wins: current.wins + 1,
+        bestTime: current.bestTime === undefined ? elapsed : Math.min(current.bestTime, elapsed),
+        totalWinTime: current.totalWinTime + elapsed,
+        currentStreak,
+        bestStreak: Math.max(current.bestStreak, currentStreak),
+      }
+
+      if (nextGame.mode === 'daily') {
+        const alreadyClearedToday = current.dailyLastWin === nextGame.dailyDate
+        next.dailyBestTime = current.dailyBestTime === undefined ? elapsed : Math.min(current.dailyBestTime, elapsed)
+        next.dailyLastWin = nextGame.dailyDate
+        if (!alreadyClearedToday) {
+          next.dailyWins += 1
+        }
+      }
+
       return next
     })
   }
@@ -834,7 +1081,11 @@ function App() {
       return
     }
 
-    const nextGame = applyRemoval(game, ids)
+    const nextGame = {
+      ...applyRemoval(game, ids),
+      mode: game.mode,
+      dailyDate: game.dailyDate,
+    }
     if (nextGame.finishedAt) {
       playWinSound()
     } else if (legalMoves(nextGame.board, nextGame.metalIndex).length > 0) {
@@ -938,7 +1189,7 @@ function App() {
 
   const currentPurple = getUnlockedMetal(game.metalIndex)
   const elapsedMs = game.timerStartedAt ? (game.finishedAt ?? now) - game.timerStartedAt : 0
-  const winPercentage = formatPercentage(wins, losses)
+  const winPercentage = formatPercentage(stats.wins, stats.losses)
   const purpleStateFor = (index: number) => {
     if (index < game.metalIndex) {
       return 'completed' as const
@@ -951,21 +1202,33 @@ function App() {
     <main className="app">
       <AppHeader
         elapsed={formatTime(elapsedMs)}
+        mode={game.mode}
         undoDisabled={!game.history.length}
         onRules={() => setRulesOpen((open) => !open)}
+        onStats={() => setStatsOpen(true)}
+        onDaily={() => void newGame('daily')}
         onUndo={() => {
           setLossOpen(false)
-          setGame((current) => (current ? undoGame(current) : current))
+          setGame((current) =>
+            current
+              ? {
+                  ...undoGame(current),
+                  mode: current.mode,
+                  dailyDate: current.dailyDate,
+                }
+              : current,
+          )
         }}
         onNew={() => void newGame()}
       />
 
       <section className="board-wrap" aria-label="Puzzle board">
         <svg
-          className="board"
+          className={`board ${isDealing ? 'is-dealing' : ''}`}
+          key={dealKey}
           viewBox={`0 0 ${boardMetrics.width} ${boardMetrics.height}`}
           role="img"
-          aria-label="Hexagonal puzzle board"
+          aria-label={`${MODE_LABELS[game.mode]} hexagonal puzzle board`}
           onClick={(event) => {
             if (event.target instanceof Element && !event.target.closest('.marble')) {
               clearSelection()
@@ -995,7 +1258,7 @@ function App() {
             })}
           </g>
           <g className="marbles">
-            {marbles.map((marble) => {
+            {marbles.map((marble, index) => {
               const point = toPoint(marble.cell.q, marble.cell.r, boardMetrics)
               const free = canSelect(game.board, marble, game.metalIndex)
               const selected = game.selectedIds.includes(marble.id)
@@ -1013,6 +1276,7 @@ function App() {
                   } ${matchCandidate ? 'is-match-candidate' : ''
                   }`}
                   transform={`translate(${point.x} ${point.y})`}
+                  style={{ '--deal-index': index } as CSSProperties}
                   role="button"
                   tabIndex={0}
                   aria-label={`${MARBLE_LABELS[marble.type]} ${free ? 'free' : 'locked'}`}
@@ -1078,14 +1342,14 @@ function App() {
                 </p>
                 <p className="result-stat">
                   <span>Best time</span>
-                  <strong>{bestTime === undefined ? '—' : formatTime(bestTime)}</strong>
+                  <strong>{stats.bestTime === undefined ? '—' : formatTime(stats.bestTime)}</strong>
                 </p>
               </section>
               <section className="result-stat-column" aria-labelledby="win-stats-title">
                 <h3 id="win-stats-title">Wins</h3>
                 <p className="result-stat">
                   <span>Wins</span>
-                  <strong>{wins}</strong>
+                  <strong>{stats.wins}</strong>
                 </p>
                 <p className="result-stat">
                   <span>Win percentage</span>
@@ -1110,7 +1374,15 @@ function App() {
                 type="button"
                 onClick={() => {
                   setLossOpen(false)
-                  setGame((current) => (current ? undoGame(current) : current))
+                  setGame((current) =>
+                    current
+                      ? {
+                          ...undoGame(current),
+                          mode: current.mode,
+                          dailyDate: current.dailyDate,
+                        }
+                      : current,
+                  )
                 }}
                 disabled={!game.history.length}
               >
@@ -1125,6 +1397,7 @@ function App() {
       )}
 
       {rulesOpen && <RulesModal onClose={() => setRulesOpen(false)} />}
+      {statsOpen && <StatsModal stats={stats} onClose={() => setStatsOpen(false)} />}
     </main>
   )
 }
